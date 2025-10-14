@@ -1,0 +1,174 @@
+import os
+from langgraph.graph import StateGraph, END, START, add_messages
+from langgraph.prebuilt import ToolNode
+from langgraph.managed.is_last_step import RemainingSteps
+from langchain_core.messages import AnyMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
+from langchain_core.runnables import RunnableConfig
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.output_parsers import PydanticOutputParser
+from dotenv import load_dotenv
+from pydantic import BaseModel, Field
+from typing import Annotated, TypedDict, Sequence
+
+
+
+from graph.nao_entendi import nao_entendi
+from graph.informacoes import informacoes
+from banco_dados.message_history import save_message, get_history
+
+
+
+
+LINK_AGENDAMENTO = os.getenv("LINK_AGENDAMENTO")
+NOME_DONO = os.getenv("NOME_DONO")
+PROFISSAO =  os.getenv("PROFISSAO")
+REGRAS =  os.getenv("REGRAS")
+
+
+
+tools = [informacoes, nao_entendi]
+
+load_dotenv()
+
+class AgentState(TypedDict):
+    messages: Annotated[Sequence[AnyMessage], add_messages]
+    remaining_steps: RemainingSteps
+
+def roteador(state: AgentState, config: RunnableConfig):
+
+    model = ChatOpenAI(model="gpt-5-mini")
+    model_bind_tool = model.bind_tools(tools)
+    conversation_id = config.get("configurable", {}).get("conversation_id", "default") ##
+    history = get_history(conversation_id) ##
+    
+    sys_prompt = f"""
+        # Contexto #
+        Você é uma secretária virtual de um(a) {PROFISSAO} chamado(a) {NOME_DONO}.
+        Número de identificação do cliente {conversation_id}
+
+        # Uso das ferramentas #
+        Você tem acesso às ferramentas abaixo. Use-as quando necessário para responder a(o) cliente
+
+        <Ferramentas>
+        1. informacoes - Use quando precisar de informações sobre o serviço (Ex: Atende remoto?, Qual o endereço?, Como funciona o serviço?, Quais são os produtos?, Pacotes e Preços?, etc)
+        2. nao_entendi - Use quando não entender a solicitação da cliente. Só use como último recurso.
+        </Ferramentas>
+
+        # Regras #
+        1. Para agendamento o cliente deve usar o seguinte link {LINK_AGENDAMENTO}
+        """
+    
+    prompt_template = ChatPromptTemplate.from_messages([
+    ('system', sys_prompt),
+    MessagesPlaceholder(variable_name='history'),
+    MessagesPlaceholder(variable_name='current_messages'),
+])
+
+    full_input = {
+    "history": history,  # mensagens antigas
+    "current_messages": state["messages"]  # mensagens novas
+}
+
+    prompt = prompt_template.invoke(full_input)
+    response = model_bind_tool.invoke(prompt, config)
+    
+    if not response.tool_calls:
+        response.content = ""
+
+    return {"messages": [response]}
+
+
+def formatador(state: AgentState, config: RunnableConfig):
+
+    model = ChatOpenAI(model="gpt-4.1")
+
+    conversation_id = config.get("configurable", {}).get("conversation_id", "default") ##
+    history = get_history(conversation_id) ##
+    
+    sys_prompt = f"""
+        # Contexto #
+        Você é uma secretária virtual de um(a) {PROFISSAO} chamado(a) {NOME_DONO}.
+
+        # Regras de atendimento #
+        ==NUNCA invente informações. Não crie variações inexistentes nem sugira opções que não sabe se existem.==
+        1. Não diga que vai fazer algo que você não consegue (ex.: tirar fotos).
+        2. Para agendamento o cliente deve usar o seguinte link {LINK_AGENDAMENTO}
+        3. Qualquer demanda que fuja das informações que você tem, informe ao cliente que a demanda que ele esta trazendo só pode ser tratada com a {NOME_DONO} e que assim que possível ele será atendido.
+        {REGRAS}
+
+        # Modo de falar #
+
+        1. Tenha uma conversa fluida, evitando textos muito longos. Seja objetiva, mas não seca.
+        2. Evite linguagem muito formal.
+        3. Quando você fizer uma pergunta, finalize a mensagem com ela (não continue escrevendo depois).
+        4. Evite gírias.
+        5. Ao passar várias informações, evite tanto colocar tudo numa linha só quanto quebrar demais — busque equilíbrio.
+        6. Nunca use o seguinte caractere: —
+        7. Seja direto(a), não fale coisas desnecessárias, principalmente se forem dúvidas simples.
+
+        # Formatação das respostas #
+
+        A resposta final deve vir separada em mensagens fracionadas, simulando conversa natural.
+        O símbolo para separação será: $%&$
+        Se houver link, ele deve estar sozinho em uma fração (sem texto antes ou depois).
+        Se houver vários links, cada um deve vir em uma fração separada.
+        """
+    
+    prompt_template = ChatPromptTemplate(
+    input_variables=["history", "current_messages", "sys_prompt"],
+    # partial_variables={"format_instructions": parser.get_format_instructions()},
+    messages=[
+        ("system", sys_prompt),
+        MessagesPlaceholder(variable_name="history"),
+        MessagesPlaceholder(variable_name="current_messages"),
+    ],
+)
+
+    full_input = {
+    "history": history,  # mensagens antigas
+    "current_messages": state["messages"],  # mensagens novas
+    "sys_prompt": sys_prompt
+}
+
+    prompt = prompt_template.invoke(full_input)
+    resposta = model.invoke(prompt)
+    
+    return {"messages": [resposta]}
+
+
+def should_continue(state):
+    messages = state["messages"]
+    last_message = messages[-1]
+    
+    if state["remaining_steps"] <= 8:
+        return "no_ferramenta_final"
+    elif not last_message.tool_calls:
+        return "formatador"
+    else:
+        return "no_ferramenta"
+    
+def save(state, config):
+    conversation_id = config.get("configurable", {}).get("conversation_id", "default")
+    save_message(conversation_id, state["messages"])
+
+
+def build_chat_graph():
+    workflow = StateGraph(AgentState)
+
+    workflow.add_node("roteador", roteador)
+    workflow.add_node("formatador", formatador)
+    workflow.add_node("no_ferramenta", ToolNode(tools))
+    workflow.add_node("no_ferramenta_final", ToolNode(tools))
+    workflow.add_node("save", save)
+
+    workflow.add_edge(START, "roteador")
+    workflow.add_conditional_edges("roteador", should_continue)
+    workflow.add_edge("no_ferramenta", "roteador")
+    workflow.add_edge("no_ferramenta_final", "formatador")
+    workflow.add_edge("formatador", "save")
+    workflow.add_edge("save", END)
+
+    return workflow.compile()
