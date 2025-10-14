@@ -1,0 +1,20 @@
+# Core do Django
+Django==4.2.7
+
+# Servidor de aplicação WSGI para produção
+gunicorn==21.2.0
+
+# Driver para conectar com o banco de dados PostgreSQL
+psycopg2-binary==2.9.9
+
+# Cliente Python para o Redis
+redis==5.0.1
+
+# Para fazer chamadas HTTP para a Evolution API
+requests==2.31.0
+
+# Para carregar variáveis de ambiente de arquivos .env
+python-dotenv==1.0.0
+
+# Para renderizar templates (Jinja2)
+Jinja2==3.1.2

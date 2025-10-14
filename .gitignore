@@ -1,0 +1,49 @@
+# Arquivos de Ambiente e Dependências
+# Nunca compartilhe ambientes virtuais ou dependências baixadas.
+venv/
+__pycache__/
+*.pyc
+
+# Configurações de Editor/IDE
+# Cada desenvolvedor tem sua própria configuração.
+.vscode/
+.idea/
+
+# Arquivos de Ambiente e Credenciais
+# NUNCA versione chaves de API, senhas ou segredos.
+.env
+*.env.*
+
+# Bancos de Dados e Arquivos Temporários
+# O banco de dados é gerado localmente, não faz parte do código-fonte.
+*.db
+*.sqlite3
+chatbots.session.sql # Ignorando arquivo de sessão SQL temporário
+
+# Logs
+# Logs são gerados durante a execução e não devem ser versionados.
+*.log
+*.log.*
+
+# Armazenamento de Dados de Ferramentas (ex: Qdrant)
+# Ignora os dados gerados pelo Qdrant.
+qdrant_storage/
+qdrant_data/
+
+# Dados e Saídas Geradas
+# É uma boa prática ter uma pasta para dados gerados pelo seu código
+# e ignorá-la completamente.
+output/
+generated_data/
+
+# Para a pasta 'data/', a melhor abordagem é:
+# 1. Ignorar a pasta toda...
+data/
+
+# 2. ...e usar uma exceção (!) para incluir arquivos de dados essenciais.
+# Descomente a linha abaixo para permitir que 'dados_iniciais.csv' seja versionado.
+# !data/dados_iniciais.csv
+
+# OU, se a pasta 'data' contém APENAS dados que devem ser versionados,
+# remova 'data/' desta lista e adicione os arquivos específicos de saída
+# (como *.csv) na seção 'Dados e Saídas Geradas' acima. Ex: output/*.csv
