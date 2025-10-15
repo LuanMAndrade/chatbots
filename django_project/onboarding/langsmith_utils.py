@@ -8,6 +8,8 @@ import calendar
 
 logger = logging.getLogger(__name__)
 
+dolar = 6
+
 def get_langsmith_client():
     """Initializes the LangSmith client."""
     try:
@@ -23,47 +25,85 @@ def get_langsmith_client():
 def get_month_period(year, month, billing_day=5):
     """Calculates the month's period based on the billing day."""
     current_date = datetime.now()
-    start_date_of_month = datetime(year, month, 1)
+    current_day = current_date.day
 
-    # Determine the start of the period
-    if start_date_of_month.month == 1:
-        start_time = datetime(start_date_of_month.year - 1, 12, billing_day)
+    if current_day >= billing_day:
+        month += 1
+
+    
+    if month == 1:
+        start_year = year - 1
+        start_month = 12
     else:
-        start_time = datetime(start_date_of_month.year, start_date_of_month.month - 1, billing_day)
-
-    # Determine the end of the period
-    end_time = datetime(year, month, billing_day - 1, 23, 59, 59)
-
+        start_year = year
+        start_month = month - 1
+    
+    start_time = datetime(start_year, start_month, billing_day, 0, 0, 0)
+    
+    # Data de fim: dia anterior ao dia de cobrança do mês atual
+    end_day = billing_day - 1
+    if end_day == 0:
+        if month == 12:
+            end_year = year + 1
+            end_month = 1
+        else:
+            end_year = year
+            end_month = month + 1
+        end_day = calendar.monthrange(end_year, end_month)[1]  # Último dia do mês
+    else:
+        end_year = year
+        end_month = month
+    
+    end_time = datetime(end_year, end_month, end_day, 23, 59, 59)
+    
     return start_time, end_time
 
 
 def get_available_months(billing_day=5):
-    """Returns available months based on the billing day."""
-    months = []
-    # Start from the current month or previous month depending on billing day
-    today = datetime.today()
-    current_month = today.month
-    current_year = today.year
-
-    if today.day < billing_day:
-        if current_month == 1:
+    """
+    Retorna os meses disponíveis baseado no dia de cobrança
+    """
+    current_date = datetime.now()
+    current_day = current_date.day
+    
+    # Se ainda não passou do dia de cobrança, o mês atual ainda não começou
+    if current_day < billing_day:
+        # Estamos no período do mês anterior
+        if current_date.month == 1:
+            current_year = current_date.year - 1
             current_month = 12
-            current_year -= 1
         else:
-            current_month -= 1
+            current_year = current_date.year
+            current_month = current_date.month - 1
+    else:
+        # Estamos no período do mês atual
+        current_year = current_date.year
+        current_month = current_date.month
 
+    meses_pt = {
+        1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril",
+        5: "Maio", 6: "Junho", 7: "Julho", 8: "Agosto",
+        9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"
+    }
+    months = []
+    
+    # Adiciona os últimos 12 meses
     for i in range(12):
         month = current_month - i
         year = current_year
-        if month <= 0:
+        
+        while month <= 0:
             month += 12
             year -= 1
-
-        month_name = calendar.month_name[month]
+        
+        month_name = meses_pt.get(month)
         months.append({
             'value': f"{year}-{month:02d}",
             'label': f"{month_name} {year}",
+            'year': year,
+            'month': month
         })
+    
     return months
 
 
@@ -97,7 +137,7 @@ def get_token_usage_for_period(project_name, start_time, end_time):
         'input_tokens': prompt_tokens,
         'output_tokens': completion_tokens,
         'total_tokens': total_tokens,
-        'total_cost': total_cost,
+        'total_cost': total_cost * dolar,
         'run_count': len(runs),
         'period_start': start_time.isoformat(),
         'period_end': end_time.isoformat(),
@@ -141,4 +181,13 @@ def get_daily_usage_breakdown(project_name, start_time, end_time):
                 if run.total_cost:
                     daily_data[day_str]['cost'] += run.total_cost
 
+    daily_data[day_str]['cost'] *= dolar
     return sorted(daily_data.values(), key=lambda x: x['date'])
+
+
+if __name__ == "__main__":
+    x = get_available_months(billing_day=5)
+    y = get_month_period(2025, 2, billing_day=5)
+    print(y)
+    #x = get_daily_usage_breakdown('bot_model', start_time, end_time)
+    

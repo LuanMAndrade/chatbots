@@ -11,6 +11,9 @@ from django.contrib import messages
 from . import langsmith_utils
 import logging
 import calendar
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+from django.contrib import messages
 
 # --- Views de Autenticação e Informações (sem alterações) ---
 def login_view(request):
@@ -28,8 +31,25 @@ def login_view(request):
     return render(request, 'login.html', {'form': form})
 
 @login_required
+def profile_view(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Mantém o usuário logado
+            messages.success(request, 'Sua senha foi alterada com sucesso!')
+            return redirect('profile')
+        else:
+            messages.error(request, 'Por favor, corrija os erros abaixo.')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'profile.html', {
+        'form': form
+    })
+
+@login_required
 def dashboard_view(request):
-    return render(request, 'dashboard.html')
+    return redirect('consumo')
 
 # Adicione estas importações no início do arquivo views.py
 
