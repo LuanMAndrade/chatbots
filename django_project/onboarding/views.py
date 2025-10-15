@@ -3,7 +3,8 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 import os
-from .models import AutomatedMessage
+from .models import AutomatedMessage, BotInfo # Importe o novo modelo
+from django.shortcuts import get_object_or_404
 
 def login_view(request):
     if request.method == 'POST':
@@ -24,17 +25,6 @@ def dashboard_view(request):
     return render(request, 'dashboard.html')
 
 @login_required
-def add_info_view(request):
-    if request.method == 'POST':
-        info_text = request.POST.get('info_text')
-        user_bot_folder = f"/root/chatbots/bot_{request.user.username}/data"
-        os.makedirs(user_bot_folder, exist_ok=True)
-        with open(os.path.join(user_bot_folder, "info.txt"), "w") as f:
-            f.write(info_text)
-        return redirect('dashboard')
-    return render(request, 'add_info.html')
-
-@login_required
 def auto_messages_view(request):
     if request.method == 'POST':
         phone_number = request.POST.get('phone_number')
@@ -48,3 +38,24 @@ def auto_messages_view(request):
         )
         return redirect('dashboard')
     return render(request, 'auto_messages.html')
+
+
+@login_required
+def add_info_view(request):
+    # Tenta buscar a informação existente para o usuário
+    try:
+        bot_info = BotInfo.objects.get(user=request.user)
+    except BotInfo.DoesNotExist:
+        bot_info = None
+
+    if request.method == 'POST':
+        info_text = request.POST.get('info_text')
+        # Se a informação já existe, atualiza. Se não, cria.
+        BotInfo.objects.update_or_create(
+            user=request.user,
+            defaults={'info_text': info_text}
+        )
+        return redirect('dashboard')
+
+    # Passa a informação existente para o template
+    return render(request, 'add_info.html', {'info_text': bot_info.info_text if bot_info else ''})

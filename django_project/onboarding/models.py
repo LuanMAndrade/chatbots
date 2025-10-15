@@ -9,3 +9,11 @@ class AutomatedMessage(models.Model):
 
     def __str__(self):
         return f"Mensagem para {self.phone_number} agendada para {self.send_at}"
+
+# ADICIONE ESTE NOVO MODELO
+class BotInfo(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    info_text = models.TextField()
+
+    def __str__(self):
+        return f"Informações do Bot para {self.user.username}"

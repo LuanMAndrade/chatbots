@@ -25,3 +25,10 @@ sudo systemctl enable {bot_model}
 sudo systemctl start {bot_model}
 
 
+
+
+docker compose restart django_app
+docker compose exec django_app python manage.py makemigrations onboarding
+docker compose exec django_app python manage.py migrate
+
+

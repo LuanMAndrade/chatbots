@@ -3,7 +3,7 @@
 <h2>Adicionar Informações</h2>
 <form method="post">
     {% csrf_token %}
-    <textarea name="info_text" rows="10" cols="50"></textarea>
+    <textarea name="info_text" rows="10" cols="50">{{ info_text }}</textarea>
     <br>
     <button type="submit">Salvar</button>
 </form>
