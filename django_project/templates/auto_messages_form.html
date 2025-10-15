@@ -1,41 +1,368 @@
 {% extends "base.html" %}
-{% block content %}
-<h2>{% if message_instance %}Editar Agendamento{% else %}Novo Agendamento{% endif %}</h2>
+{% block title %}{% if message_instance %}Editar{% else %}Nova{% endif %} Mensagem - Chatbot Manager{% endblock %}
 
-<form method="post">
-    {% csrf_token %}
-    <label for="phone_number">Número de Telefone:</label><br>
-    <input type="text" id="phone_number" name="phone_number" value="{{ message_instance.phone_number|default:'' }}" maxlength="15" placeholder="(XX) 9XXXX-XXXX" required><br>
-    
-    <label for="message">Mensagem:</label><br>
-    <textarea id="message" name="message" rows="4" cols="50" required>{{ message_instance.message|default:'' }}</textarea><br>
-    
-    <label for="send_at">Data e Hora de Envio:</label><br>
-    <input type="datetime-local" id="send_at" name="send_at" value="{{ message_instance.send_at|date:'Y-m-d\TH:i' }}" required><br><br>
-    
-    <button type="submit">Salvar</button>
-    <a href="{% url 'auto_messages_dashboard' %}">Cancelar</a>
-</form>
+{% block extra_css %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .contact-selector {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: var(--bg-light);
+        border-radius: 0.5rem;
+    }
+
+    .selector-option {
+        flex: 1;
+        padding: 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: white;
+        text-align: center;
+    }
+
+    .selector-option:hover {
+        border-color: var(--primary-color);
+    }
+
+    .selector-option.active {
+        border-color: var(--primary-color);
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .selector-option i {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    .contact-section {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .contact-section.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .contact-list {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 2px solid var(--border-color);
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 0.5rem;
+    }
+
+    .contact-item:hover {
+        background: var(--bg-light);
+    }
+
+    .contact-item input[type="radio"] {
+        margin-right: 1rem;
+    }
+
+    .contact-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        margin-right: 1rem;
+    }
+
+    .contact-info {
+        flex: 1;
+    }
+
+    .contact-name {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .contact-phone {
+        font-size: 0.875rem;
+        color: var(--text-light);
+    }
+
+    .search-box {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        border: 2px solid var(--border-color);
+        border-radius: 0.5rem;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-light);
+    }
+
+    .char-counter {
+        text-align: right;
+        font-size: 0.875rem;
+        color: var(--text-light);
+        margin-top: 0.5rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-light);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="content-card">
+        <div class="page-header">
+            <h1>
+                <i class="fas fa-{% if message_instance %}edit{% else %}plus-circle{% endif %}"></i>
+                {% if message_instance %}Editar Mensagem{% else %}Nova Mensagem Agendada{% endif %}
+            </h1>
+        </div>
+
+        <form method="post" id="messageForm">
+            {% csrf_token %}
+
+            {% if not message_instance %}
+            <div class="contact-selector">
+                <div class="selector-option active" onclick="selectSource('whatsapp')">
+                    <i class="fab fa-whatsapp"></i>
+                    <strong>Contatos do WhatsApp</strong>
+                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">Selecione da sua lista</p>
+                </div>
+                <div class="selector-option" onclick="selectSource('manual')">
+                    <i class="fas fa-keyboard"></i>
+                    <strong>Inserir Manualmente</strong>
+                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">Digite nome e número</p>
+                </div>
+            </div>
+
+            <input type="hidden" name="contact_source" id="contact_source" value="whatsapp">
+
+            <!-- Seção de Contatos do WhatsApp -->
+            <div class="contact-section active" id="whatsapp-section">
+                <div class="form-group">
+                    <label>Selecione um Contato</label>
+                    {% if whatsapp_contacts %}
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="contact-search" placeholder="Buscar contato...">
+                        </div>
+                        <div class="contact-list" id="contactList">
+                            {% for contact in whatsapp_contacts %}
+                            <label class="contact-item" data-name="{{ contact.name|lower }}" data-phone="{{ contact.phone }}">
+                                <input type="radio" name="whatsapp_contact" value="{{ contact.id }}" required>
+                                <div class="contact-avatar">{{ contact.name|slice:":1"|upper }}</div>
+                                <div class="contact-info">
+                                    <div class="contact-name">{{ contact.name }}</div>
+                                    <div class="contact-phone">{{ contact.phone }}</div>
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-address-book"></i>
+                            <p>Nenhum contato encontrado</p>
+                            <small>Não foi possível carregar contatos do WhatsApp</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Seção de Inserção Manual -->
+            <div class="contact-section" id="manual-section">
+                <div class="form-group">
+                    <label for="contact_name"><i class="fas fa-user"></i> Nome do Contato</label>
+                    <input type="text" id="contact_name" name="contact_name" class="form-control" placeholder="Ex: João Silva">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone_number"><i class="fas fa-phone"></i> Número de Telefone</label>
+                    <input type="text" id="phone_number" name="phone_number" class="form-control" placeholder="(00) 00000-0000" maxlength="15">
+                    <small style="color: var(--text-light); margin-top: 0.5rem; display: block;">
+                        Formato: (DDD) + número com 9 dígitos
+                    </small>
+                </div>
+            </div>
+            {% else %}
+            <!-- Modo de edição - mostra informações do contato -->
+            <div class="form-group">
+                <label>Contato</label>
+                <div class="contact-item" style="border: 2px solid var(--border-color); cursor: default;">
+                    <div class="contact-avatar">{{ message_instance.contact_name|slice:":1"|upper }}</div>
+                    <div class="contact-info">
+                        <div class="contact-name">{{ message_instance.contact_name }}</div>
+                        <div class="contact-phone">{{ message_instance.phone_number }}</div>
+                    </div>
+                </div>
+                <input type="hidden" name="contact_source" value="manual">
+                <input type="hidden" name="contact_name" value="{{ message_instance.contact_name }}">
+                <input type="hidden" name="phone_number" value="{{ message_instance.phone_number }}">
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="message"><i class="fas fa-comment-alt"></i> Mensagem</label>
+                <textarea id="message" name="message" class="form-control" rows="6" required placeholder="Digite sua mensagem aqui...">{% if message_instance %}{{ message_instance.message }}{% endif %}</textarea>
+                <div class="char-counter">
+                    <span id="charCount">0</span> caracteres
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="send_at"><i class="fas fa-calendar-alt"></i> Data e Hora do Envio</label>
+                <input type="datetime-local" id="send_at" name="send_at" class="form-control" required value="{% if message_instance %}{{ message_instance.send_at|date:'Y-m-d\TH:i' }}{% endif %}">
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'auto_messages_dashboard' %}" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-{% if message_instance %}save{% else %}paper-plane{% endif %}"></i>
+                    {% if message_instance %}Salvar Alterações{% else %}Agendar Mensagem{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <script>
-    const phoneInput = document.getElementById('phone_number');
-
-    phoneInput.addEventListener('input', () => {
-        // Remove todos os caracteres que não são dígitos
-        let value = phoneInput.value.replace(/\D/g, '');
-
-        // Aplica a máscara (XX) XXXXX-XXXX
-        if (value.length > 10) {
-            value = `(${value.substring(0, 2)}) ${value.substring(2, 7)}-${value.substring(7, 11)}`;
-        } else if (value.length > 6) {
-            value = `(${value.substring(0, 2)}) ${value.substring(2, 6)}-${value.substring(6)}`;
-        } else if (value.length > 2) {
-            value = `(${value.substring(0, 2)}) ${value.substring(2)}`;
-        } else if (value.length > 0) {
-            value = `(${value}`;
-        }
+    // Seletor de fonte de contato
+    function selectSource(source) {
+        document.getElementById('contact_source').value = source;
         
-        phoneInput.value = value;
-    });
+        // Atualiza botões
+        document.querySelectorAll('.selector-option').forEach(opt => opt.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        
+        // Atualiza seções
+        document.querySelectorAll('.contact-section').forEach(section => section.classList.remove('active'));
+        document.getElementById(source + '-section').classList.add('active');
+        
+        // Atualiza required nos campos
+        if (source === 'whatsapp') {
+            document.querySelector('input[name="whatsapp_contact"]')?.setAttribute('required', 'required');
+            document.getElementById('contact_name')?.removeAttribute('required');
+            document.getElementById('phone_number')?.removeAttribute('required');
+        } else {
+            document.querySelector('input[name="whatsapp_contact"]')?.removeAttribute('required');
+            document.getElementById('contact_name')?.setAttribute('required', 'required');
+            document.getElementById('phone_number')?.setAttribute('required', 'required');
+        }
+    }
+
+    // Busca de contatos
+    const searchInput = document.getElementById('contact-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const contacts = document.querySelectorAll('.contact-item');
+            
+            contacts.forEach(contact => {
+                const name = contact.dataset.name || '';
+                const phone = contact.dataset.phone || '';
+                
+                if (name.includes(searchTerm) || phone.includes(searchTerm)) {
+                    contact.style.display = 'flex';
+                } else {
+                    contact.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    // Máscara de telefone
+    const phoneInput = document.getElementById('phone_number');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+            let value = this.value.replace(/\D/g, '');
+            
+            if (value.length > 11) value = value.slice(0, 11);
+            
+            if (value.length > 10) {
+                value = `(${value.substring(0, 2)}) ${value.substring(2, 7)}-${value.substring(7, 11)}`;
+            } else if (value.length > 6) {
+                value = `(${value.substring(0, 2)}) ${value.substring(2, 6)}-${value.substring(6)}`;
+            } else if (value.length > 2) {
+                value = `(${value.substring(0, 2)}) ${value.substring(2)}`;
+            }
+            
+            this.value = value;
+        });
+    }
+
+    // Contador de caracteres
+    const messageTextarea = document.getElementById('message');
+    const charCount = document.getElementById('charCount');
+    
+    function updateCharCount() {
+        charCount.textContent = messageTextarea.value.length;
+    }
+    
+    messageTextarea.addEventListener('input', updateCharCount);
+    updateCharCount();
+
+    // Define data mínima como agora
+    const sendAtInput = document.getElementById('send_at');
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    sendAtInput.min = now.toISOString().slice(0, 16);
 </script>
 {% endblock %}

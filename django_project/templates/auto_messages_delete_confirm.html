@@ -1,6 +1,10 @@
 {% extends "base.html" %}
+
+{% block title %}Confirmar Exclusão{% endblock %}
+
+{% block page_title %}Confirmar Exclusão{% endblock %}
+
 {% block content %}
-<h2>Confirmar Exclusão</h2>
 <p>Você tem certeza que deseja excluir a seguinte mensagem agendada para <strong>{{ message.phone_number }}</strong> em <strong>{{ message.send_at|date:"d/m/Y H:i" }}</strong>?</p>
 <p><em>"{{ message.message }}"</em></p>
 

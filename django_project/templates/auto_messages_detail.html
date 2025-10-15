@@ -1,28 +1,299 @@
 {% extends "base.html" %}
-{% block content %}
+{% block title %}Mensagens para {{ contact_name }} - Chatbot Manager{% endblock %}
+
+{% block extra_css %}
 <style>
-    .message-detail-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; }
-    .actions a, .actions button { margin-left: 10px; }
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--primary-color);
+        text-decoration: none;
+        margin-bottom: 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .back-link:hover {
+        gap: 0.75rem;
+    }
+
+    .contact-header {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 2rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border-radius: 1rem;
+        color: white;
+        margin-bottom: 2rem;
+    }
+
+    .contact-avatar-large {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 700;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .contact-header-info h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 2rem;
+    }
+
+    .contact-header-info p {
+        margin: 0;
+        opacity: 0.9;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--border-color);
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-bottom: 2rem;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -1.6rem;
+        top: 0.5rem;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid var(--primary-color);
+        z-index: 1;
+    }
+
+    .timeline-item.sent::before {
+        border-color: var(--success-color);
+    }
+
+    .timeline-card {
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-left: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .timeline-card:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-md);
+    }
+
+    .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .timeline-date {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-light);
+        font-size: 0.875rem;
+    }
+
+    .message-content {
+        background: var(--bg-light);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+
+    .message-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+    }
+
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-box {
+        background: white;
+        border: 2px solid var(--border-color);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .stat-box-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+
+    .stat-box-label {
+        color: var(--text-light);
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
 </style>
+{% endblock %}
 
-<h2>Mensagens Agendadas para {{ phone_number }}</h2>
-<a href="{% url 'auto_messages_dashboard' %}"><< Voltar</a>
+{% block content %}
+<a href="{% url 'auto_messages_dashboard' %}" class="back-link">
+    <i class="fas fa-arrow-left"></i> Voltar para Mensagens
+</a>
 
-<div style="margin-top: 20px;">
-{% for msg in messages %}
-    <div class="message-detail-item">
-        <span><strong>Quando:</strong> {{ msg.send_at|date:"d/m/Y H:i" }}</span>
-        <span>{{ msg.message|truncatechars:50 }}</span>
-        <div class="actions">
-            <a href="{% url 'auto_messages_edit' message_id=msg.id %}"><button>Editar</button></a>
-            <form action="{% url 'auto_messages_delete' message_id=msg.id %}" method="post" style="display: inline;">
-                {% csrf_token %}
-                <button type="submit">Excluir</button>
-            </form>
+<div class="contact-header">
+    <div class="contact-avatar-large">{{ contact_name|slice:":1"|upper }}</div>
+    <div class="contact-header-info">
+        <h1>{{ contact_name }}</h1>
+        <p><i class="fas fa-phone"></i> {{ phone_number }}</p>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="stat-box-value">{{ messages|length }}</div>
+            <div class="stat-box-label">Total de Mensagens</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-box-value">{{ messages|selectattr:"status", "equalto", "pending"|list|length }}</div>
+            <div class="stat-box-label">Pendentes</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-box-value">{{ messages|selectattr:"status", "equalto", "sent"|list|length }}</div>
+            <div class="stat-box-label">Enviadas</div>
         </div>
     </div>
-{% empty %}
-    <p>Nenhuma mensagem encontrada para este número.</p>
-{% endfor %}
+
+    <h2 style="margin-bottom: 2rem; color: var(--text-dark);">
+        <i class="fas fa-history"></i> Histórico de Mensagens
+    </h2>
+
+    {% if messages %}
+        <div class="timeline">
+            {% for msg in messages %}
+            <div class="timeline-item {% if msg.status == 'sent' %}sent{% endif %}">
+                <div class="timeline-card">
+                    <div class="timeline-header">
+                        <span class="status-badge {{ msg.status }}">
+                            {% if msg.status == 'pending' %}
+                                <i class="fas fa-clock"></i> Pendente
+                            {% elif msg.status == 'sent' %}
+                                <i class="fas fa-check-circle"></i> Enviada
+                            {% else %}
+                                <i class="fas fa-exclamation-circle"></i> Falhou
+                            {% endif %}
+                        </span>
+                        <div class="timeline-date">
+                            {% if msg.status == 'sent' %}
+                                <i class="fas fa-calendar-check"></i>
+                                Enviada em {{ msg.sent_at|date:"d/m/Y H:i" }}
+                            {% else %}
+                                <i class="fas fa-calendar-alt"></i>
+                                Agendada para {{ msg.send_at|date:"d/m/Y H:i" }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="message-content">
+                        {{ msg.message }}
+                    </div>
+                    
+                    {% if msg.status == 'pending' %}
+                    <div class="message-actions">
+                        <a href="{% url 'auto_messages_edit' message_id=msg.id %}" class="btn btn-outline btn-sm">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <form action="{% url 'auto_messages_delete' message_id=msg.id %}" method="post" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir esta mensagem?')">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash"></i> Excluir
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div style="text-align: right;">
+                        <small style="color: var(--text-light);">
+                            <i class="fas fa-clock"></i> Agendada para: {{ msg.send_at|date:"d/m/Y H:i" }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>Nenhuma mensagem encontrada</h3>
+            <p>Não há mensagens para este contato</p>
+        </div>
+    {% endif %}
 </div>
+
+<style>
+    /* Fix para o filtro selectattr do Jinja que não funciona no Django */
+    .stat-box:nth-child(2) .stat-box-value,
+    .stat-box:nth-child(3) .stat-box-value {
+        color: var(--warning-color);
+    }
+    
+    .stat-box:nth-child(3) .stat-box-value {
+        color: var(--success-color);
+    }
+</style>
+
+<script>
+    // Calcula as estatísticas dinamicamente
+    document.addEventListener('DOMContentLoaded', function() {
+        const items = document.querySelectorAll('.timeline-item');
+        let pendingCount = 0;
+        let sentCount = 0;
+        
+        items.forEach(item => {
+            if (item.classList.contains('sent')) {
+                sentCount++;
+            } else {
+                pendingCount++;
+            }
+        });
+        
+        const statBoxes = document.querySelectorAll('.stat-box-value');
+        if (statBoxes.length >= 3) {
+            statBoxes[1].textContent = pendingCount;
+            statBoxes[2].textContent = sentCount;
+        }
+    });
+</script>
 {% endblock %}

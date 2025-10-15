@@ -1,10 +1,243 @@
 {% extends "base.html" %}
+{% block title %}Informações do Bot - Chatbot Manager{% endblock %}
+
+{% block extra_css %}
+<style>
+    .info-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .info-tips {
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        border-left: 4px solid var(--secondary-color);
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-tips h3 {
+        color: #1e40af;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-tips ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .info-tips li {
+        padding: 0.5rem 0;
+        color: #1e3a8a;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .info-tips li i {
+        color: var(--secondary-color);
+        margin-top: 0.25rem;
+    }
+
+    .char-counter {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        color: var(--text-light);
+    }
+
+    .word-count {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .editor-toolbar {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        padding: 0.75rem;
+        background: var(--bg-light);
+        border-radius: 0.5rem 0.5rem 0 0;
+        border: 2px solid var(--border-color);
+        border-bottom: none;
+    }
+
+    .toolbar-btn {
+        padding: 0.5rem 0.75rem;
+        border: none;
+        background: white;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--text-dark);
+    }
+
+    .toolbar-btn:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    #info_text {
+        border-radius: 0 0 0.5rem 0.5rem;
+        border-top: none;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<h2>Adicionar Informações</h2>
-<form method="post">
-    {% csrf_token %}
-    <textarea name="info_text" rows="10" cols="50">{{ info_text }}</textarea>
-    <br>
-    <button type="submit">Salvar</button>
-</form>
+<div class="info-container">
+    <div class="content-card">
+        <div class="page-header">
+            <h1><i class="fas fa-info-circle"></i> Informações do Bot</h1>
+        </div>
+
+        <div class="info-tips">
+            <h3><i class="fas fa-lightbulb"></i> Dicas para melhores resultados</h3>
+            <ul>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span>Seja claro e objetivo nas informações fornecidas ao bot</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span>Inclua informações sobre produtos, serviços, horários de funcionamento e políticas</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span>Organize o conteúdo em tópicos para facilitar a compreensão do bot</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span>Atualize regularmente as informações para manter o bot preciso</span>
+                </li>
+                <li>
+                    <i class="fas fa-check-circle"></i>
+                    <span>Evite informações contraditórias ou ambíguas</span>
+                </li>
+            </ul>
+        </div>
+
+        <form method="post" id="infoForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="info_text">
+                    <i class="fas fa-file-alt"></i> Conteúdo das Informações
+                </label>
+                
+                <div class="editor-toolbar">
+                    <button type="button" class="toolbar-btn" onclick="insertText('**Negrito**')" title="Negrito">
+                        <i class="fas fa-bold"></i>
+                    </button>
+                    <button type="button" class="toolbar-btn" onclick="insertText('*Itálico*')" title="Itálico">
+                        <i class="fas fa-italic"></i>
+                    </button>
+                    <button type="button" class="toolbar-btn" onclick="insertText('\n• ')" title="Lista">
+                        <i class="fas fa-list-ul"></i>
+                    </button>
+                    <button type="button" class="toolbar-btn" onclick="insertText('\n## ')" title="Título">
+                        <i class="fas fa-heading"></i>
+                    </button>
+                </div>
+                
+                <textarea id="info_text" 
+                          name="info_text" 
+                          class="form-control" 
+                          rows="20" 
+                          placeholder="Digite aqui todas as informações que o bot deve conhecer...
+
+Exemplo:
+
+## Sobre a Empresa
+Nossa empresa atua no ramo de...
+
+## Produtos e Serviços
+Oferecemos:
+• Produto 1
+• Produto 2
+• Serviço 1
+
+## Horário de Funcionamento
+Segunda a Sexta: 9h às 18h
+Sábado: 9h às 12h">{{ info_text }}</textarea>
+                
+                <div class="char-counter">
+                    <span>
+                        <span id="charCount" class="word-count">0</span> caracteres |
+                        <span id="wordCount" class="word-count">0</span> palavras
+                    </span>
+                    <span id="lineCount" class="word-count">0 linhas</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <a href="{% url 'dashboard' %}" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Salvar e Atualizar Bot
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const textarea = document.getElementById('info_text');
+    const charCount = document.getElementById('charCount');
+    const wordCount = document.getElementById('wordCount');
+    const lineCount = document.getElementById('lineCount');
+
+    function updateCounts() {
+        const text = textarea.value;
+        
+        // Contagem de caracteres
+        charCount.textContent = text.length;
+        
+        // Contagem de palavras
+        const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+        wordCount.textContent = words.length;
+        
+        // Contagem de linhas
+        const lines = text.split('\n').length;
+        lineCount.textContent = lines;
+    }
+
+    function insertText(text) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selectedText = textarea.value.substring(start, end);
+        
+        let newText;
+        if (text.includes('**') || text.includes('*')) {
+            // Para negrito e itálico, envolve o texto selecionado
+            if (selectedText) {
+                newText = text.replace(/\*+/, match => match + selectedText + match);
+            } else {
+                newText = text;
+            }
+        } else {
+            newText = text;
+        }
+        
+        textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+        
+        // Reposiciona o cursor
+        const newPosition = start + newText.length;
+        textarea.setSelectionRange(newPosition, newPosition);
+        textarea.focus();
+        
+        updateCounts();
+    }
+
+    textarea.addEventListener('input', updateCounts);
+    
+    // Inicializa as contagens
+    updateCounts();
+</script>
 {% endblock %}

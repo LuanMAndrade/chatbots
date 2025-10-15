@@ -1,9 +1,201 @@
 {% extends "base.html" %}
+{% block title %}Dashboard - Chatbot Manager{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: var(--shadow-lg);
+        transition: transform 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .stat-card.success {
+        background: linear-gradient(135deg, var(--success-color), #059669);
+    }
+
+    .stat-card.warning {
+        background: linear-gradient(135deg, var(--warning-color), #d97706);
+    }
+
+    .stat-card.info {
+        background: linear-gradient(135deg, var(--secondary-color), #0891b2);
+    }
+
+    .stat-icon {
+        font-size: 3rem;
+        opacity: 0.9;
+        margin-bottom: 1rem;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .action-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        box-shadow: var(--shadow-md);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .action-card:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-3px);
+    }
+
+    .action-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .action-card h3 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+    }
+
+    .action-card p {
+        color: var(--text-light);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .welcome-banner {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .welcome-banner h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .welcome-banner p {
+        font-size: 1.1rem;
+        opacity: 0.95;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<h2>Dashboard</h2>
-<ul>
-    <li><a href="{% url 'add_info' %}">Adicionar Informações</a></li>
-    <li><a href="{% url 'auto_messages_dashboard' %}">Mensagens Automáticas</a></li>
-    <li><a href="{% url 'consumo' %}">Consumo</a></li> {# ADICIONAR ESTA LINHA #}
-</ul>
+<div class="welcome-banner">
+    <h1><i class="fas fa-rocket"></i> Bem-vindo, {{ user.username }}!</h1>
+    <p>Gerencie seus chatbots e mensagens automáticas em um só lugar</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-value">{{ pending_count }}</div>
+        <div class="stat-label">Mensagens Pendentes</div>
+    </div>
+
+    <div class="stat-card success">
+        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-value">{{ sent_count }}</div>
+        <div class="stat-label">Mensagens Enviadas</div>
+    </div>
+
+    <div class="stat-card {% if has_bot_info %}info{% else %}warning{% endif %}">
+        <div class="stat-icon"><i class="fas fa-robot"></i></div>
+        <div class="stat-value">{% if has_bot_info %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-exclamation"></i>{% endif %}</div>
+        <div class="stat-label">Status do Bot</div>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="page-header">
+        <h2><i class="fas fa-bolt"></i> Ações Rápidas</h2>
+    </div>
+
+    <div class="quick-actions">
+        <div class="action-card">
+            <div class="action-icon">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <h3>Informações do Bot</h3>
+            <p>Configure e atualize as informações que seu chatbot utilizará nas conversas.</p>
+            <a href="{% url 'add_info' %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Gerenciar Informações
+            </a>
+        </div>
+
+        <div class="action-card">
+            <div class="action-icon" style="background: linear-gradient(135deg, var(--secondary-color), #0891b2);">
+                <i class="fas fa-calendar-alt"></i>
+            </div>
+            <h3>Mensagens Automáticas</h3>
+            <p>Agende mensagens para seus contatos e gerencie envios automatizados.</p>
+            <a href="{% url 'auto_messages_dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-paper-plane"></i> Ver Mensagens
+            </a>
+        </div>
+
+        <div class="action-card">
+            <div class="action-icon" style="background: linear-gradient(135deg, var(--success-color), #059669);">
+                <i class="fas fa-plus-circle"></i>
+            </div>
+            <h3>Nova Mensagem</h3>
+            <p>Crie um novo agendamento de mensagem para seus contatos do WhatsApp.</p>
+            <a href="{% url 'auto_messages_new' %}" class="btn btn-success">
+                <i class="fas fa-calendar-plus"></i> Agendar Agora
+            </a>
+        </div>
+
+        <div class="action-card">
+            <div class="action-icon" style="background: linear-gradient(135deg, var(--warning-color), #d97706);">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3>Consumo de Tokens</h3>
+            <p>Monitore o uso de tokens e custos dos seus chatbots.</p>
+            <a href="{% url 'consumo' %}" class="btn btn-outline">
+                <i class="fas fa-chart-bar"></i> Ver Estatísticas
+            </a>
+        </div>
+    </div>
+</div>
 {% endblock %}

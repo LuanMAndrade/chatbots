@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Consumo de Tokens{% endblock %}
+
+{% block page_title %}Consumo de Tokens - {{ selected_project }}{% endblock %}
+
 {% block content %}
 <style>
     /* Estilos adaptados de App.css */
@@ -59,8 +63,8 @@
             <p class="metric-value">{{ usage_data.output_tokens|floatformat:0 }}</p>
         </div>
         <div class="metric-card" style="border-left-color: #e74c3c;">
-            <h3>Custo Total (USD)</h3>
-            <p class="metric-value">${{ usage_data.total_cost|floatformat:2 }}</p>
+            <h3>Custo Total (BRL)</h3>
+            <p class="metric-value">R${{ usage_data.total_cost|floatformat:2 }}</p>
         </div>
     </div>
 
@@ -70,7 +74,7 @@
             <canvas id="dailyTokensChart"></canvas>
         </div>
         <div class="chart-section">
-            <h3>💵 Custo Diário (USD)</h3>
+            <h3>💵 Custo Diário (BRL)</h3>
             <canvas id="dailyCostChart"></canvas>
         </div>
     </div>
@@ -125,7 +129,7 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Custo (USD)',
+                        label: 'Custo (BRL)',
                         data: dailyData.map(d => d.cost),
                         backgroundColor: '#e74c3c',
                     }]
