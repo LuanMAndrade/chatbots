@@ -8,6 +8,9 @@ import os
 import subprocess
 import sys
 from django.contrib import messages
+from . import langsmith_utils
+import logging
+import calendar
 
 # --- Views de Autenticação e Informações (sem alterações) ---
 def login_view(request):
@@ -161,3 +164,44 @@ def auto_messages_delete_view(request, message_id):
     
     # Se for GET, mostra uma página de confirmação
     return render(request, 'auto_messages_delete_confirm.html', {'message': message_to_delete})
+
+
+@login_required
+def consumo_view(request):
+    projects = ['bot_sejasua', 'bot_model'] # Você pode buscar isso dinamicamente se preferir
+
+    # Pega o projeto da query string ou usa o primeiro como padrão
+    selected_project = request.GET.get('project', projects[0])
+
+    # Pega o mês da query string ou usa o mais recente como padrão
+    available_months = langsmith_utils.get_available_months()
+    selected_month_str = request.GET.get('month', available_months[0]['value'])
+
+    year, month = map(int, selected_month_str.split('-'))
+
+    start_time, end_time = langsmith_utils.get_month_period(year, month)
+
+    usage_data = {}
+    daily_data = []
+    error = None
+
+    try:
+        usage_data = langsmith_utils.get_token_usage_for_period(selected_project, start_time, end_time)
+        daily_data = langsmith_utils.get_daily_usage_breakdown(selected_project, start_time, end_time)
+        usage_data['month_name'] = calendar.month_name[month]
+        usage_data['year'] = year
+
+    except Exception as e:
+        error = f"Erro ao buscar dados do LangSmith: {e}"
+        logger.error(error)
+
+    context = {
+        'projects': projects,
+        'selected_project': selected_project,
+        'available_months': available_months,
+        'selected_month': selected_month_str,
+        'usage_data': usage_data,
+        'daily_data': daily_data,
+        'error': error,
+    }
+    return render(request, 'consumo.html', context)

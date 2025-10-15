@@ -12,4 +12,5 @@ urlpatterns = [
     path('auto_messages/phone/<str:phone_number>/', views.auto_messages_detail_view, name='auto_messages_detail'),
     path('auto_messages/edit/<int:message_id>/', views.auto_messages_form_view, name='auto_messages_edit'),
     path('auto_messages/delete/<int:message_id>/', views.auto_messages_delete_view, name='auto_messages_delete'),
+    path('consumo/', views.consumo_view, name='consumo'),
 ]
