@@ -13,7 +13,7 @@ services:
       - .env
 
   postgres:
-    image: postgres:13
+    image: postgres:16  # ALTERADO: de 13 para 16 (compatível com Django 4.2+)
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -25,21 +25,32 @@ services:
       - pg_data:/var/lib/postgresql/data
     networks:
       - lab_evolution
+    healthcheck:  # ADICIONADO: verificação de saúde do PostgreSQL
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   django_app:
-    build: ./django_project # Crie um Dockerfile neste diretório
+    build: ./django_project
     container_name: chatbot_manager_app
     restart: always
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./django_project:/app
-      - /root/chatbots:/root/chatbots # Mapeia a pasta de chatbots
-      - /etc/systemd/system:/etc/systemd/system # Mapeia a pasta de serviços do systemd
+      - /root/chatbots:/root/chatbots
+      - /etc/systemd/system:/etc/systemd/system
     ports:
       - "8000:8000"
+    env_file:
+      - .env  # ADICIONADO: carrega as variáveis de ambiente
     depends_on:
-      - postgres # Se o Django usar o mesmo banco
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - lab_evolution
 
   redis:
     image: redis:alpine
