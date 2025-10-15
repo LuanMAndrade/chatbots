@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Confirmar Exclusão</h2>
+<p>Você tem certeza que deseja excluir a seguinte mensagem agendada para <strong>{{ message.phone_number }}</strong> em <strong>{{ message.send_at|date:"d/m/Y H:i" }}</strong>?</p>
+<p><em>"{{ message.message }}"</em></p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Sim, excluir</button>
+    <a href="{% url 'auto_messages_detail' phone_number=message.phone_number %}">Cancelar</a>
+</form>
+{% endblock %}

@@ -1,6 +1,7 @@
 Django
 gunicorn
-psycopg2-binary
+psycopg==3.2.10
+psycopg2-binary==2.9.11
 redis
 requests
 python-dotenv

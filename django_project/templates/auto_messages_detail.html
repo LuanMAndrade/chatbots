@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .message-detail-item { display: flex; align-items: center; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; }
+    .actions a, .actions button { margin-left: 10px; }
+</style>
+
+<h2>Mensagens Agendadas para {{ phone_number }}</h2>
+<a href="{% url 'auto_messages_dashboard' %}"><< Voltar</a>
+
+<div style="margin-top: 20px;">
+{% for msg in messages %}
+    <div class="message-detail-item">
+        <span><strong>Quando:</strong> {{ msg.send_at|date:"d/m/Y H:i" }}</span>
+        <span>{{ msg.message|truncatechars:50 }}</span>
+        <div class="actions">
+            <a href="{% url 'auto_messages_edit' message_id=msg.id %}"><button>Editar</button></a>
+            <form action="{% url 'auto_messages_delete' message_id=msg.id %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit">Excluir</button>
+            </form>
+        </div>
+    </div>
+{% empty %}
+    <p>Nenhuma mensagem encontrada para este número.</p>
+{% endfor %}
+</div>
+{% endblock %}

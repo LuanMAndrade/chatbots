@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{% if message_instance %}Editar Agendamento{% else %}Novo Agendamento{% endif %}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <label for="phone_number">Número de Telefone:</label><br>
+    <input type="text" id="phone_number" name="phone_number" value="{{ message_instance.phone_number|default:'' }}" maxlength="15" placeholder="(XX) 9XXXX-XXXX" required><br>
+    
+    <label for="message">Mensagem:</label><br>
+    <textarea id="message" name="message" rows="4" cols="50" required>{{ message_instance.message|default:'' }}</textarea><br>
+    
+    <label for="send_at">Data e Hora de Envio:</label><br>
+    <input type="datetime-local" id="send_at" name="send_at" value="{{ message_instance.send_at|date:'Y-m-d\TH:i' }}" required><br><br>
+    
+    <button type="submit">Salvar</button>
+    <a href="{% url 'auto_messages_dashboard' %}">Cancelar</a>
+</form>
+
+<script>
+    const phoneInput = document.getElementById('phone_number');
+
+    phoneInput.addEventListener('input', () => {
+        // Remove todos os caracteres que não são dígitos
+        let value = phoneInput.value.replace(/\D/g, '');
+
+        // Aplica a máscara (XX) XXXXX-XXXX
+        if (value.length > 10) {
+            value = `(${value.substring(0, 2)}) ${value.substring(2, 7)}-${value.substring(7, 11)}`;
+        } else if (value.length > 6) {
+            value = `(${value.substring(0, 2)}) ${value.substring(2, 6)}-${value.substring(6)}`;
+        } else if (value.length > 2) {
+            value = `(${value.substring(0, 2)}) ${value.substring(2)}`;
+        } else if (value.length > 0) {
+            value = `(${value}`;
+        }
+        
+        phoneInput.value = value;
+    });
+</script>
+{% endblock %}

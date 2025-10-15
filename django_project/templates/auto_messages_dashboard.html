@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 20px; }
+    .tab-link { padding: 10px 15px; cursor: pointer; border: 1px solid transparent; border-bottom: none; }
+    .tab-link.active { border-color: #ccc; border-bottom: 1px solid white; margin-bottom: -1px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .message-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; }
+</style>
+
+<h2>Mensagens Automáticas</h2>
+<a href="{% url 'auto_messages_new' %}" style="margin-bottom: 20px; display: inline-block;">
+    <button>Novo Agendamento</button>
+</a>
+
+<div class="tabs">
+    <div class="tab-link active" onclick="openTab(event, 'Resumo')">Resumo</div>
+    <div class="tab-link" onclick="openTab(event, 'Agendadas')">Mensagens Agendadas</div>
+</div>
+
+<div id="Resumo" class="tab-content active">
+    <h3>Próximos Envios</h3>
+    {% for msg in upcoming_messages %}
+        <div class="message-item">
+            <span><strong>Para:</strong> {{ msg.phone_number }}</span>
+            <span><strong>Quando:</strong> {{ msg.send_at|date:"d/m/Y H:i" }}</span>
+            <span>{{ msg.message|truncatechars:50 }}</span>
+        </div>
+    {% empty %}
+        <p>Nenhuma mensagem futura agendada.</p>
+    {% endfor %}
+</div>
+
+<div id="Agendadas" class="tab-content">
+    <h3>Ver Agendamentos por Número</h3>
+    {% for number in scheduled_numbers %}
+        <p><a href="{% url 'auto_messages_detail' phone_number=number %}">{{ number }}</a></p>
+    {% empty %}
+        <p>Nenhum número com mensagens agendadas.</p>
+    {% endfor %}
+</div>
+
+<script>
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tab-link");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+</script>
+{% endblock %}
