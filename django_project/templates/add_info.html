@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Adicionar Informações</h2>
+<form method="post">
+    {% csrf_token %}
+    <textarea name="info_text" rows="10" cols="50"></textarea>
+    <br>
+    <button type="submit">Salvar</button>
+</form>
+{% endblock %}
