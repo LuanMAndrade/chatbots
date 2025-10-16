@@ -28,7 +28,19 @@ class AutomatedMessage(models.Model):
 
 class BotInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    info_text = models.TextField(verbose_name="Informações do Bot")
+    
+    # Novos campos específicos
+    horarios_atendimento = models.TextField(verbose_name="Horários de Atendimento", blank=True, default='')
+    endereco_atendimento = models.TextField(verbose_name="Endereço de Atendimento", blank=True, default='')
+    nome_profissional = models.CharField(max_length=200, verbose_name="Nome do Profissional", blank=True, default='')
+    profissao = models.CharField(max_length=200, verbose_name="Profissão", blank=True, default='')
+    produtos_servicos_precos = models.TextField(verbose_name="Produtos, Serviços e Preços", blank=True, default='')
+    informacoes_relevantes = models.TextField(verbose_name="Informações Relevantes sobre o Negócio", blank=True, default='')
+    modo_atendimento = models.TextField(verbose_name="Modo de Atendimento", blank=True, default='')
+    
+    # Mantém o campo antigo para compatibilidade (pode ser removido depois)
+    info_text = models.TextField(verbose_name="Informações do Bot (Legado)", blank=True, default='')
+    
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Criada em")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Atualizada em")
 

@@ -18,16 +18,12 @@ from typing import Annotated, TypedDict, Sequence
 from graph.nao_entendi import nao_entendi
 from graph.informacoes import informacoes
 from banco_dados.message_history import save_message, get_history
+from update_info import fetch_bot_info
 
 
 
 
 LINK_AGENDAMENTO = os.getenv("LINK_AGENDAMENTO")
-NOME_DONO = os.getenv("NOME_DONO")
-PROFISSAO =  os.getenv("PROFISSAO")
-REGRAS =  os.getenv("REGRAS")
-
-
 
 tools = [informacoes, nao_entendi]
 
@@ -46,7 +42,7 @@ def roteador(state: AgentState, config: RunnableConfig):
     
     sys_prompt = f"""
         # Contexto #
-        Você é uma secretária virtual de um(a) {PROFISSAO} chamado(a) {NOME_DONO}.
+        Você é uma secretária virtual.
         Número de identificação do cliente {conversation_id}
 
         # Uso das ferramentas #
@@ -88,34 +84,7 @@ def formatador(state: AgentState, config: RunnableConfig):
     conversation_id = config.get("configurable", {}).get("conversation_id", "default") ##
     history = get_history(conversation_id) ##
     
-    sys_prompt = f"""
-        # Contexto #
-        Você é uma secretária virtual de um(a) {PROFISSAO} chamado(a) {NOME_DONO}.
-
-        # Regras de atendimento #
-        ==NUNCA invente informações. Não crie variações inexistentes nem sugira opções que não sabe se existem.==
-        1. Não diga que vai fazer algo que você não consegue (ex.: tirar fotos).
-        2. Para agendamento o cliente deve usar o seguinte link {LINK_AGENDAMENTO}
-        3. Qualquer demanda que fuja das informações que você tem, informe ao cliente que a demanda que ele esta trazendo só pode ser tratada com a {NOME_DONO} e que assim que possível ele será atendido.
-        {REGRAS}
-
-        # Modo de falar #
-
-        1. Tenha uma conversa fluida, evitando textos muito longos. Seja objetiva, mas não seca.
-        2. Evite linguagem muito formal.
-        3. Quando você fizer uma pergunta, finalize a mensagem com ela (não continue escrevendo depois).
-        4. Evite gírias.
-        5. Ao passar várias informações, evite tanto colocar tudo numa linha só quanto quebrar demais — busque equilíbrio.
-        6. Nunca use o seguinte caractere: —
-        7. Seja direto(a), não fale coisas desnecessárias, principalmente se forem dúvidas simples.
-
-        # Formatação das respostas #
-
-        A resposta final deve vir separada em mensagens fracionadas, simulando conversa natural.
-        O símbolo para separação será: $%&$
-        Se houver link, ele deve estar sozinho em uma fração (sem texto antes ou depois).
-        Se houver vários links, cada um deve vir em uma fração separada.
-        """
+    sys_prompt = variavel
     
     prompt_template = ChatPromptTemplate(
     input_variables=["history", "current_messages", "sys_prompt"],

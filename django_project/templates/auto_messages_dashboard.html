@@ -298,7 +298,7 @@
                         <a href="{% url 'auto_messages_edit' message_id=msg.id %}" class="btn btn-outline btn-sm">
                             <i class="fas fa-edit"></i> Editar
                         </a>
-                        <a href="{% url 'auto_messages_detail' phone_number=msg.phone_number %}" class="btn btn-primary btn-sm">
+                        <a href="{% url 'auto_messages_detail' phone_number=msg.phone_number %}" class="btn btn-primary btn-sm" style="display: none;">
                             <i class="fas fa-eye"></i> Ver Todas
                         </a>
                     </div>
@@ -367,11 +367,11 @@
                 </div>
                 {% endfor %}
 
-                <h3 style="margin: 2rem 0 1rem 0; color: var(--text-dark);">
+                <h3 style="margin: 2rem 0 1rem 0; color: var(--text-dark); display: none;">
                     <i class="fas fa-address-book"></i> Por Contato
                 </h3>
                 {% for contact in scheduled_numbers %}
-                <a href="{% url 'auto_messages_detail' phone_number=contact.phone_number %}" class="contact-list-item">
+                <a href="{% url 'auto_messages_detail' phone_number=contact.phone_number %}" class="contact-list-item" style="display: none">
                     <div class="contact-badge">
                         <div class="contact-avatar-small">{{ contact.contact_name|slice:":1"|upper }}</div>
                         <div class="contact-details">

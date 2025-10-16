@@ -87,10 +87,27 @@ def add_info_view(request):
         bot_info = None
 
     if request.method == 'POST':
-        info_text = request.POST.get('info_text')
+        # Coleta todos os campos do formulário
+        horarios_atendimento = request.POST.get('horarios_atendimento', '')
+        endereco_atendimento = request.POST.get('endereco_atendimento', '')
+        nome_profissional = request.POST.get('nome_profissional', '')
+        profissao = request.POST.get('profissao', '')
+        produtos_servicos_precos = request.POST.get('produtos_servicos_precos', '')
+        informacoes_relevantes = request.POST.get('informacoes_relevantes', '')
+        modo_atendimento = request.POST.get('modo_atendimento', '')
+        
+        # Atualiza ou cria o BotInfo com todos os campos
         BotInfo.objects.update_or_create(
             user=request.user,
-            defaults={'info_text': info_text}
+            defaults={
+                'horarios_atendimento': horarios_atendimento,
+                'endereco_atendimento': endereco_atendimento,
+                'nome_profissional': nome_profissional,
+                'profissao': profissao,
+                'produtos_servicos_precos': produtos_servicos_precos,
+                'informacoes_relevantes': informacoes_relevantes,
+                'modo_atendimento': modo_atendimento,
+            }
         )
         
         try:
@@ -116,15 +133,18 @@ def add_info_view(request):
                     error_log = result.stderr or "Ocorreu um erro desconhecido no script de atualização."
                     messages.error(request, f'Falha ao atualizar o bot. Erro: {error_log}')
             else:
-                messages.warning(request, f'Script de gatilho (update_info.py) não encontrado para o bot_{username}.')
+                messages.warning(request, f'Script de atualização (update_info.py) não encontrado para o bot_{username}.')
 
         except Exception as e:
-            messages.error(request, f'Ocorreu um erro ao executar o gatilho: {e}')
+            messages.error(request, f'Ocorreu um erro ao executar o script de atualização: {e}')
         
         return redirect('dashboard')
 
-    return render(request, 'add_info.html', {'info_text': bot_info.info_text if bot_info else ''})
-
+    context = {
+        'bot_info': bot_info
+    }
+    return render(request, 'add_info.html', context)
+    
 # --- Views de Mensagens Automáticas ---
 @login_required
 def auto_messages_dashboard_view(request):
