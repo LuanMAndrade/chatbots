@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, update_session_auth_hash
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.utils import timezone
@@ -29,6 +29,13 @@ def login_view(request):
     else:
         form = AuthenticationForm()
     return render(request, 'login.html', {'form': form})
+
+@login_required
+def logout_view(request):
+    """Faz logout do usuário"""
+    logout(request)
+    messages.success(request, 'Você saiu com sucesso!')
+    return redirect('login')
 
 @login_required
 def profile_view(request):
@@ -175,7 +182,7 @@ def auto_messages_form_view(request, message_id=None):
     whatsapp_contacts = evolution_api.get_whatsapp_contacts(request.user.username)
     
     if request.method == 'POST':
-        source = request.POST.get('contact_source')  # 'whatsapp' ou 'manual'
+        source = request.POST.get('contact_source')
         
         if source == 'whatsapp':
             contact_id = request.POST.get('whatsapp_contact')
@@ -190,7 +197,7 @@ def auto_messages_form_view(request, message_id=None):
             else:
                 messages.error(request, 'Por favor, selecione um contato.')
                 return redirect('auto_messages_new')
-        else:  # manual
+        else:
             contact_name = request.POST.get('contact_name')
             phone_number = request.POST.get('phone_number')
             
@@ -241,8 +248,9 @@ def auto_messages_delete_view(request, message_id):
 # --- View de Consumo ---
 @login_required
 def consumo_view(request):
-    projects = ['bot_sejasua', 'bot_model']
-    selected_project = request.GET.get('project', projects[0])
+    # Determina o projeto baseado no username
+    username = request.user.username
+    selected_project = f'bot_{username}'
     
     available_months = langsmith_utils.get_available_months()
     selected_month_str = request.GET.get('month', available_months[0]['value'])
@@ -264,7 +272,6 @@ def consumo_view(request):
         logger.error(error)
     
     context = {
-        'projects': projects,
         'selected_project': selected_project,
         'available_months': available_months,
         'selected_month': selected_month_str,

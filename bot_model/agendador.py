@@ -18,7 +18,7 @@ def get_db_connection():
             dbname=os.getenv('POSTGRES_DB'),
             user=os.getenv('POSTGRES_USER'),
             password=os.getenv('POSTGRES_PASSWORD'),
-            host='localhost',  # Conectando ao serviço do docker
+            host='localhost',
             port='5432'
         )
         return conn
@@ -41,7 +41,9 @@ def get_scheduled_messages():
             cur.execute("""
                 SELECT id, phone_number, message
                 FROM onboarding_automatedmessage
-                WHERE send_at >= %s AND send_at <= NOW();
+                WHERE send_at >= %s 
+                AND send_at <= NOW()
+                AND status = 'pending';
             """, (ten_minutes_ago,))
             
             results = cur.fetchall()
@@ -65,7 +67,10 @@ async def send_message(sender: str, message_text: str):
     INSTANCIA_EVOLUTION_API = os.getenv("INSTANCIA_EVOLUTION_API")
     EVOLUTION_TEXT_URL_TEMPLATE = os.getenv("EVOLUTION_TEXT_URL")
     EVOLUTION_PORT = os.getenv("EVOLUTION_PORT")
-    EVOLUTION_TEXT_URL = EVOLUTION_TEXT_URL_TEMPLATE.format(INSTANCIA=INSTANCIA_EVOLUTION_API, EVOLUTION_PORT=EVOLUTION_PORT)
+    EVOLUTION_TEXT_URL = EVOLUTION_TEXT_URL_TEMPLATE.format(
+        INSTANCIA=INSTANCIA_EVOLUTION_API, 
+        EVOLUTION_PORT=EVOLUTION_PORT
+    )
     EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY")
 
     headers = {
@@ -80,7 +85,12 @@ async def send_message(sender: str, message_text: str):
     
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post(EVOLUTION_TEXT_URL, json=payload, headers=headers, timeout=30)
+            response = await client.post(
+                EVOLUTION_TEXT_URL, 
+                json=payload, 
+                headers=headers, 
+                timeout=30
+            )
             if response.status_code == 200 or response.status_code == 201:
                 print(f"Mensagem enviada com sucesso para {sender}")
                 return True
@@ -91,19 +101,44 @@ async def send_message(sender: str, message_text: str):
         print(f"Erro na requisição para a API: {e}")
         return False
 
-def delete_message(message_id: int):
-    """Deleta a mensagem do banco de dados após o envio."""
+def mark_message_as_sent(message_id: int):
+    """Marca a mensagem como enviada no banco de dados."""
     conn = get_db_connection()
     if not conn:
         return
 
     try:
         with conn.cursor() as cur:
-            cur.execute("DELETE FROM onboarding_automatedmessage WHERE id = %s;", (message_id,))
+            cur.execute("""
+                UPDATE onboarding_automatedmessage 
+                SET status = 'sent', sent_at = NOW() 
+                WHERE id = %s;
+            """, (message_id,))
         conn.commit()
-        print(f"Mensagem ID {message_id} deletada do banco de dados.")
+        print(f"Mensagem ID {message_id} marcada como enviada.")
     except Exception as e:
-        print(f"Erro ao deletar mensagem ID {message_id}: {e}")
+        print(f"Erro ao atualizar mensagem ID {message_id}: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+def mark_message_as_failed(message_id: int):
+    """Marca a mensagem como falha no banco de dados."""
+    conn = get_db_connection()
+    if not conn:
+        return
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE onboarding_automatedmessage 
+                SET status = 'failed' 
+                WHERE id = %s;
+            """, (message_id,))
+        conn.commit()
+        print(f"Mensagem ID {message_id} marcada como falha.")
+    except Exception as e:
+        print(f"Erro ao atualizar mensagem ID {message_id}: {e}")
     finally:
         if conn:
             conn.close()
@@ -120,7 +155,9 @@ async def check_and_send_messages():
     for msg in messages_to_send:
         success = await send_message(msg['phone_number'], msg['message'])
         if success:
-            delete_message(msg['id'])
+            mark_message_as_sent(msg['id'])
+        else:
+            mark_message_as_failed(msg['id'])
 
 if __name__ == '__main__':
     while True:

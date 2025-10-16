@@ -47,3 +47,6 @@ data/
 # OU, se a pasta 'data' contém APENAS dados que devem ser versionados,
 # remova 'data/' desta lista e adicione os arquivos específicos de saída
 # (como *.csv) na seção 'Dados e Saídas Geradas' acima. Ex: output/*.csv
+
+staticfiles/
+
