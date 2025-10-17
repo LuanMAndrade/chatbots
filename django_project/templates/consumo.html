@@ -24,7 +24,7 @@
 <div class="dashboard-header">
     <h2>📈 Consumo de Tokens - {{ selected_project }}</h2>
     <form method="get" id="filter-form" class="selectors">
-        <div class="selector">
+        <div class="selector" style="display:none">
             <label for="project">Projeto: </label>
             <select name="project" id="project-select" onchange="document.getElementById('filter-form').submit()">
                 {% for project in projects %}

@@ -258,10 +258,9 @@ def auto_messages_delete_view(request, message_id):
     message_to_delete = get_object_or_404(AutomatedMessage, id=message_id, user=request.user)
     
     if request.method == 'POST':
-        phone_number = message_to_delete.phone_number
         message_to_delete.delete()
         messages.success(request, 'Mensagem excluída com sucesso!')
-        return redirect('auto_messages_detail', phone_number=phone_number)
+        return redirect('auto_messages_dashboard')
     
     return render(request, 'auto_messages_delete_confirm.html', {'message': message_to_delete})
 

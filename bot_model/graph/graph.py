@@ -12,7 +12,7 @@ from langchain_core.output_parsers import PydanticOutputParser
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from typing import Annotated, TypedDict, Sequence
-
+from pathlib import Path
 
 
 from graph.nao_entendi import nao_entendi
@@ -84,7 +84,15 @@ def formatador(state: AgentState, config: RunnableConfig):
     conversation_id = config.get("configurable", {}).get("conversation_id", "default") ##
     history = get_history(conversation_id) ##
     
-    sys_prompt = variavel
+    try:
+        BASE_DIR = Path(__file__).resolve().parent.parent
+        info_file_path = BASE_DIR / 'data' / 'inf_loja.txt'
+        with open(info_file_path, 'r', encoding='utf-8') as f:
+            sys_prompt = f.read()
+    except FileNotFoundError:
+        sys_prompt = "Desculpe, as informações do bot não foram encontradas."
+    except Exception as e:
+        sys_prompt = f"Ocorreu um erro ao carregar as informações do bot: {e}"
     
     prompt_template = ChatPromptTemplate(
     input_variables=["history", "current_messages", "sys_prompt"],
@@ -99,7 +107,8 @@ def formatador(state: AgentState, config: RunnableConfig):
     full_input = {
     "history": history,  # mensagens antigas
     "current_messages": state["messages"],  # mensagens novas
-    "sys_prompt": sys_prompt
+    "sys_prompt": sys_prompt,
+    "LINK_AGENDAMENTO": LINK_AGENDAMENTO
 }
 
     prompt = prompt_template.invoke(full_input)

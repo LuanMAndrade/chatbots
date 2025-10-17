@@ -127,8 +127,18 @@ def formata_bot_info(bot_info_vars):
     HumanMessage(content=informacoes)]
 
     saida = model.invoke(mensagens)
-    
-    return saida.content
+
+    project_path = Path(__file__).resolve().parent
+    info_file_path = project_path / 'data' / 'inf_loja.txt'
+
+    try:
+        with open(info_file_path, 'w', encoding='utf-8') as f:
+            f.write(saida.content)
+        print(f"✓ Informações do bot salvas com sucesso em '{info_file_path}'")
+    except Exception as e:
+        print(f"Erro ao salvar informações do bot: {e}", file=sys.stderr)
+
+
 
 
 if __name__ == '__main__':
@@ -136,7 +146,8 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         bot_username = sys.argv[1]
         info = fetch_bot_info(bot_username)
-        formata_bot_info(info)
+        if info:
+            formata_bot_info(info)
     else:
         print("Erro: Nome de usuário não foi fornecido.", file=sys.stderr)
         sys.exit(1)
