@@ -392,6 +392,39 @@
         <p>&copy; 2025 ChatbotsImas - Todos os direitos reservados</p>
     </footer>
 
+    <script>
+    // Marca o item ativo no menu mobile
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPath = window.location.pathname;
+        const menuItems = document.querySelectorAll('.mobile-menu-item, .nav-links a');
+        
+        menuItems.forEach(item => {
+            if (item.getAttribute('href') === currentPath) {
+                item.classList.add('active');
+            }
+        });
+        
+        // Previne zoom em inputs em iOS
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            if (window.innerWidth < 768) {
+                if (input.style.fontSize === '' || parseFloat(input.style.fontSize) < 16) {
+                    input.style.fontSize = '16px';
+                }
+            }
+        });
+    });
+    
+    // Ajusta viewport height para mobile (problema do menu fixo)
+    function setViewportHeight() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    
+    window.addEventListener('resize', setViewportHeight);
+    setViewportHeight();
+</script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>
