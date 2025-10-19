@@ -83,7 +83,6 @@ def formatador(state: AgentState, config: RunnableConfig):
 
     conversation_id = config.get("configurable", {}).get("conversation_id", "default") ##
     history = get_history(conversation_id) ##
-    
     try:
         BASE_DIR = Path(__file__).resolve().parent.parent
         info_file_path = BASE_DIR / 'data' / 'inf_loja.txt'

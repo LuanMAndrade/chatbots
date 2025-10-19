@@ -55,9 +55,52 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 2rem;
+            padding: 0.75rem 1rem;
             max-width: 1400px;
             margin: 0 auto;
+            position: relative;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 10;
+        }
+
+        .nav-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-overlay.active {
+            opacity: 1;
+        }
+
+        .mobile-menu-header {
+            display: none;
+        }
+
+        .mobile-menu-close {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            cursor: pointer;
+            padding: 0.5rem;
         }
 
         .logo {
@@ -317,25 +360,175 @@
 
         /* Responsive */
         @media (max-width: 768px) {
+            header {
+                position: fixed;
+                width: 100%;
+                top: 0;
+                z-index: 1000;
+            }
+
+            main {
+                margin-top: 60px; /* Altura do header fixo */
+            }
+
             nav {
+                padding: 0.75rem 1rem;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .logo {
+                font-size: 1.25rem;
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .logo i {
+                font-size: 1.5rem;
+            }
+
+            .nav-overlay.active {
+                display: block;
+            }
+
+            .nav-container {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                height: 100vh;
+                background: white;
+                z-index: 1000;
+                transition: left 0.3s ease;
+                overflow-y: auto;
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+                display: flex;
                 flex-direction: column;
-                gap: 1rem;
+            }
+
+            .nav-container.active {
+                left: 0;
+            }
+
+            .mobile-menu-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1.25rem 1rem;
+                border-bottom: 1px solid var(--border-color);
+                background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+                color: white;
+            }
+
+            .user-info-mobile {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+            }
+
+            .user-info-mobile .user-avatar {
+                width: 45px;
+                height: 45px;
+                background: rgba(255, 255, 255, 0.2);
+                border: 2px solid rgba(255, 255, 255, 0.3);
+            }
+
+            .user-name {
+                font-weight: 600;
+                font-size: 1rem;
+            }
+
+            .user-email {
+                font-size: 0.8rem;
+                opacity: 0.9;
+            }
+
+            .mobile-menu-close {
+                display: block;
+                color: white;
             }
 
             .nav-links {
                 flex-direction: column;
                 width: 100%;
+                gap: 0;
+                padding: 0.5rem 0;
+                margin: 0;
+            }
+
+            .nav-links li {
+                width: 100%;
             }
 
             .nav-links a {
                 width: 100%;
+                justify-content: flex-start;
+                padding: 1rem 1.5rem;
+                border-radius: 0;
+                border-left: 3px solid transparent;
+            }
+
+            .nav-links a:hover,
+            .nav-links a.active {
+                background: var(--bg-light);
+                border-left-color: var(--primary-color);
+            }
+
+            .nav-links a.active {
+                color: var(--primary-color);
+                font-weight: 600;
+            }
+
+            .nav-links a i {
+                width: 24px;
+                text-align: center;
+            }
+
+            .user-menu {
+                flex-direction: column;
+                width: 100%;
+                gap: 0.5rem;
+                padding: 1rem;
+                margin-top: auto;
+                border-top: 1px solid var(--border-color);
+            }
+
+            .user-menu .btn {
+                width: 100%;
                 justify-content: center;
+            }
+
+            .user-info {
+                display: none;
             }
 
             .page-header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 1rem;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-menu-toggle {
+                display: none;
+            }
+
+            .nav-container {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                flex: 1;
+                justify-content: space-between;
+            }
+
+            .nav-links {
+                display: flex;
+                flex: 1;
+                justify-content: center;
             }
         }
     </style>
@@ -345,27 +538,50 @@
     {% if user.is_authenticated %}
     <header>
         <nav>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Abrir menu">
+                <i class="fas fa-bars"></i>
+            </button>
+            
             <a href="{% url 'dashboard' %}" class="logo">
                 <i class="fas fa-robot"></i>
                 <span>Chatbot Manager</span>
             </a>
-            <ul class="nav-links">
-                <li><a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li><a href="{% url 'add_info' %}"><i class="fas fa-info-circle"></i> Informações</a></li>
-                <li><a href="{% url 'auto_messages_dashboard' %}"><i class="fas fa-calendar-alt"></i> Mensagens</a></li>
-                <li><a href="{% url 'consumo' %}"><i class="fas fa-chart-line"></i> Consumo</a></li>
-            </ul>
-            <div class="user-menu">
-                <div class="user-info">
-                    <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
-                    <span>{{ user.username }}</span>
+            
+            <div class="nav-overlay" id="navOverlay" onclick="toggleMobileMenu()"></div>
+            
+            <div class="nav-container" id="navContainer">
+                <div class="mobile-menu-header">
+                    <div class="user-info-mobile">
+                        <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                        <div>
+                            <div class="user-name">{{ user.username }}</div>
+                            <div class="user-email">{{ user.email|default:"Usuário" }}</div>
+                        </div>
+                    </div>
+                    <button class="mobile-menu-close" onclick="toggleMobileMenu()" aria-label="Fechar menu">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
-                <a href="{% url 'profile' %}" class="btn btn-outline btn-sm">
-                    <i class="fas fa-user-cog"></i> Perfil
-                </a>
-                <a href="{% url 'logout' %}" class="btn btn-danger btn-sm">
-                    <i class="fas fa-sign-out-alt"></i> Sair
-                </a>
+                
+                <ul class="nav-links">
+                    <li><a href="{% url 'dashboard' %}"><i class="fas fa-home"></i> <span>Dashboard</span></a></li>
+                    <li><a href="{% url 'add_info' %}"><i class="fas fa-info-circle"></i> <span>Informações</span></a></li>
+                    <li><a href="{% url 'auto_messages_dashboard' %}"><i class="fas fa-calendar-alt"></i> <span>Mensagens</span></a></li>
+                    <li><a href="{% url 'consumo' %}"><i class="fas fa-chart-line"></i> <span>Consumo</span></a></li>
+                </ul>
+                
+                <div class="user-menu">
+                    <div class="user-info">
+                        <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                        <span>{{ user.username }}</span>
+                    </div>
+                    <a href="{% url 'profile' %}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-user-cog"></i> <span>Perfil</span>
+                    </a>
+                    <a href="{% url 'logout' %}" class="btn btn-danger btn-sm">
+                        <i class="fas fa-sign-out-alt"></i> <span>Sair</span>
+                    </a>
+                </div>
             </div>
         </nav>
     </header>
@@ -393,7 +609,35 @@
     </footer>
 
     <script>
-    // Marca o item ativo no menu mobile
+    // Controle do menu mobile
+    function toggleMobileMenu() {
+        const navContainer = document.getElementById('navContainer');
+        const navOverlay = document.getElementById('navOverlay');
+        
+        navContainer.classList.toggle('active');
+        navOverlay.classList.toggle('active');
+        
+        // Previne scroll do body quando o menu está aberto
+        if (navContainer.classList.contains('active')) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Fecha o menu ao clicar em um link
+    document.addEventListener('DOMContentLoaded', function() {
+        const navLinks = document.querySelectorAll('.nav-links a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    toggleMobileMenu();
+                }
+            });
+        });
+    });
+
+    // Marca o item ativo no menu
     document.addEventListener('DOMContentLoaded', function() {
         const currentPath = window.location.pathname;
         const menuItems = document.querySelectorAll('.mobile-menu-item, .nav-links a');

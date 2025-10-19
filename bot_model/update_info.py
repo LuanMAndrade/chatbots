@@ -76,7 +76,7 @@ def fetch_bot_info(username: str):
 def formata_bot_info(bot_info_vars):
     """Passa as informações pelo modelo para formatar melhor"""
 
-    model = ChatOpenAI(model="gpt-4.1")
+    model = ChatOpenAI(model="gpt-4.1", temperature=0.2, max_tokens=1200)
 
     sys_prompt = """
 
