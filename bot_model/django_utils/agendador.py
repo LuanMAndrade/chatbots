@@ -10,7 +10,7 @@ import re
 
 def get_db_connection():
     """Cria e retorna uma conexão com o banco de dados."""
-    env_path = Path(__file__).resolve().parent.parent / '.env'
+    env_path = Path(__file__).resolve().parent.parent.parent / '.env'
     load_dotenv(dotenv_path=env_path)
 
     try:
@@ -48,7 +48,9 @@ def get_scheduled_messages():
             
             results = cur.fetchall()
             for row in results:
-                phone_number = '55' + re.sub(r'\D', '', row[1]) + '@s.whatsapp.net'
+                phone_number = re.sub(r'\D', '', row[1]) + '@s.whatsapp.net'
+                if not phone_number.startswith('55'):
+                    phone_number = '55' + phone_number
                 messages.append({
                     'id': row[0],
                     'phone_number': phone_number,

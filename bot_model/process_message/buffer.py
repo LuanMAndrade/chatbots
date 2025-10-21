@@ -1,6 +1,6 @@
 import asyncio
 
-BUFFER_TTL = 20
+BUFFER_TTL = 1
 
 async def buffer_message(redis_client, sender, message):
     buffer_key = f"ram:{sender}"

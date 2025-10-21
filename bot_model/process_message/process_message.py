@@ -121,91 +121,87 @@ async def process_message(data, redis_client):
         config = {"configurable": {"conversation_id": sender}}
         chat_graph = build_chat_graph()
         respostas = chat_graph.invoke({"messages": [HumanMessage(content=final_text)],}, config=config)
-        ultima_resposta = respostas["messages"][-1].content
-        lista_de_mensagens = ultima_resposta.split("$%&$")
+        lista_de_mensagens = respostas["messages"][-1].content
 
         #____________________________________________________________________________________________________________________________________________________________________________________________________________________
         # Envia a mensagem parte a parte
 
         async with httpx.AsyncClient() as client:
-                
             for parte in lista_de_mensagens:
-                if parte != '':
-                    pausou = await verifica_congelamento(sender, redis_client)
-                    if pausou:
-                        print('pausou', flush = True)
-                        return pausou
-                    parte = parte.strip()
+                if not parte.strip():  # Pula frações vazias
+                    continue
+                    
+                parte = parte.strip()
 
-                    #_____________________________________________________________________
-                    # Configurando o "Digitando..."
+                #_____________________________________________________________________
+                # Configurando o "Digitando..."
+            
+                typing_url = EVOLUTION_PRESENCE_URL 
+                tempo_digitando = len(parte)*1000/17
                 
-                    typing_url = EVOLUTION_PRESENCE_URL 
-                    tempo_digitando = len(parte)*1000/17
-                    
-                    if tempo_digitando > 6000:
-                        tempo_digitando = 6000
-                    elif tempo_digitando < 1000:
-                        tempo_digitando = 1000
+                if tempo_digitando > 6000:
+                    tempo_digitando = 6000
+                elif tempo_digitando < 1000:
+                    tempo_digitando = 1000
 
-                    print(f"tempo_digitando: {tempo_digitando}", flush = True)
+                print(f"tempo_digitando: {tempo_digitando}", flush = True)
 
-                    typing_payload = {
-                        "number": sender,
-                        'delay':tempo_digitando,
-                        'presence':'composing'}
+                typing_payload = {
+                    "number": sender,
+                    'delay':tempo_digitando,
+                    'presence':'composing'}
 
-                    await client.post(typing_url, json=typing_payload, headers=headers, timeout=30)
+                await client.post(typing_url, json=typing_payload, headers=headers, timeout=30)
 
-                    #_____________________________________________________________________
-                    # Montando o payload para enviar a mensagem
+                #_____________________________________________________________________
+                # Montando o payload para enviar a mensagem
 
-                    # Se for link de imagem vai nesse payload
-                    extensoes = ['.png', '.jpg', '.jpeg', '.webp']
-                    if any(ext in parte for ext in extensoes):
-                        pattern = r"(http[^\s]+(?:{}))".format("|".join([re.escape(ext) for ext in extensoes]))
-                        matches = re.findall(pattern, parte)
+                # Se for link de imagem vai nesse payload
+                extensoes = ['.png', '.jpg', '.jpeg', '.webp']
+                if any(ext in parte for ext in extensoes):
+                    pattern = r"(http[^\s]+(?:{}))".format("|".join([re.escape(ext) for ext in extensoes]))
+                    matches = re.findall(pattern, parte)
 
-                        for parte in matches:
-                            payload = {
-                                "number": sender,
-                                "mediatype": "image",
-                                "caption": "",
-                                "media": parte
-                                }
-                            url = EVOLUTION_MEDIA_URL
-
-                            response = await client.post(url, json=payload, headers=headers, timeout=30)
-                            print("Resposta enviada:", parte, "-", response.status_code, flush= True)
-                            print(f"Response {response.json()}", flush = True)
-                            id_imagem = response.json()['key'].get('id')
-                            print(f"Resposta FULL: {id_imagem}", flush= True)
-                            if url == EVOLUTION_MEDIA_URL:
-                                await salva_id_imagem(sender, id_imagem, parte)
-                            tempo_espera = random.randint(1, 3)
-                            await asyncio.sleep(tempo_espera)
-                    
-                    # Se for texto vai nesse payload
-                    else:
+                    for parte in matches:
                         payload = {
                             "number": sender,
-                            "type": "text",
-                            "text": parte
+                            "mediatype": "image",
+                            "caption": "",
+                            "media": parte
                             }
-                        url = EVOLUTION_TEXT_URL
-
+                        url = EVOLUTION_MEDIA_URL
 
                         response = await client.post(url, json=payload, headers=headers, timeout=30)
                         print("Resposta enviada:", parte, "-", response.status_code, flush= True)
-                        print(response.json(), flush= True)
-                        if response.json()['key']:
-                            id_imagem = response.json()['key'].get('id')
-
+                        print(f"Response {response.json()}", flush = True)
+                        id_imagem = response.json()['key'].get('id')
                         print(f"Resposta FULL: {id_imagem}", flush= True)
                         if url == EVOLUTION_MEDIA_URL:
                             await salva_id_imagem(sender, id_imagem, parte)
                         tempo_espera = random.randint(1, 3)
                         await asyncio.sleep(tempo_espera)
+                
+                # Se for texto vai nesse payload
+                else:
+                    payload = {
+                        "number": sender,
+                        "type": "text",
+                        "text": parte
+                        }
+                    url = EVOLUTION_TEXT_URL
+
+
+                    response = await client.post(url, json=payload, headers=headers, timeout=30)
+                    print("Resposta enviada:", parte, "-", response.status_code, flush= True)
+                    print(response.json(), flush= True)
+                    if response.json()['key']:
+                        id_imagem = response.json()['key'].get('id')
+
+                    print(f"Resposta FULL: {id_imagem}", flush= True)
+                    if url == EVOLUTION_MEDIA_URL:
+                        await salva_id_imagem(sender, id_imagem, parte)
+                    tempo_espera = random.randint(1, 3)
+                    await asyncio.sleep(tempo_espera)
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         arquivo = exc_tb.tb_frame.f_code.co_filename

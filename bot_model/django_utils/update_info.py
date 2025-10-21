@@ -12,7 +12,7 @@ load_dotenv()
 def get_db_connection():
     """Conecta-se ao banco de dados PostgreSQL."""
     # Carrega o arquivo .env da pasta principal do projeto
-    env_path = Path(__file__).resolve().parent.parent / '.env'
+    env_path = Path(__file__).resolve().parent.parent.parent / '.env'
     load_dotenv(dotenv_path=env_path)
 
     try:
@@ -76,7 +76,7 @@ def fetch_bot_info(username: str):
 def formata_bot_info(bot_info_vars):
     """Passa as informações pelo modelo para formatar melhor"""
 
-    model = ChatOpenAI(model="gpt-4.1")
+    model = ChatOpenAI(model="gpt-4.1", temperature=0.2, max_tokens=1200)
 
     sys_prompt = """
 
@@ -90,7 +90,6 @@ def formata_bot_info(bot_info_vars):
         Você deve manter o que já existe e somente acrescentar as informações onde for necessário.
         Você deve reescrever, se for necessário, as informações do cliente para que fique o mais claro, bem formatado e objetivo possível.
         Em hipotese alguma mexa no tópico "Formatação das respostas".
-        Onde estiver "{LINK_AGENDAMENTO}", mantenha assim mesmo, sem alterar.
 
 
         # Contexto #
@@ -113,12 +112,8 @@ def formata_bot_info(bot_info_vars):
         6. Nunca use o seguinte caractere: —
         7. Seja direto(a), não fale coisas desnecessárias, principalmente se forem dúvidas simples.
 
-        # Formatação das respostas #
-
-        A resposta final deve vir separada em mensagens fracionadas, simulando conversa natural.
-        O símbolo para separação será: $%&$
-        Se houver link, ele deve estar sozinho em uma fração (sem texto antes ou depois).
-        Se houver vários links, cada um deve vir em uma fração separada.
+        # Formatação da Resposta #
+        {format_instructions}
         """
 
     informacoes = f"Horários de Atendimento: {bot_info_vars.get('horarios_atendimento', '')}\nEndereço de Atendimento: {bot_info_vars.get('endereco_atendimento', '')}\nNome do Profissional: {bot_info_vars.get('nome_profissional', '')}\nProfissão: {bot_info_vars.get('profissao', '')}\nProdutos, Serviços e Preços: {bot_info_vars.get('produtos_servicos_precos', '')}\nInformações Relevantes sobre o Negócio: {bot_info_vars.get('informacoes_relevantes', '')}\nModo de Atendimento: {bot_info_vars.get('modo_atendimento', '')}"
@@ -128,7 +123,7 @@ def formata_bot_info(bot_info_vars):
 
     saida = model.invoke(mensagens)
 
-    project_path = Path(__file__).resolve().parent
+    project_path = Path(__file__).resolve().parent.parent
     info_file_path = project_path / 'data' / 'inf_loja.txt'
 
     try:

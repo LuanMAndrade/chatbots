@@ -113,7 +113,7 @@ def add_info_view(request):
         try:
             username = request.user.username
             bot_project_path = f"/root/chatbots/bot_{username}"
-            update_script_path = os.path.join(bot_project_path, "update_info.py")
+            update_script_path = os.path.join(bot_project_path, "django_utils/update_info.py")
 
             if os.path.exists(update_script_path):
                 python_executable = f"/root/chatbots/bot_{username}/venv/bin/python"

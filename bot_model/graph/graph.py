@@ -9,16 +9,17 @@ from langchain_core.runnables import RunnableConfig
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.output_parsers import PydanticOutputParser
+from langchain_core.exceptions import OutputParserException
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-from typing import Annotated, TypedDict, Sequence
+from typing import Annotated, TypedDict, Sequence, List
 from pathlib import Path
 
 
 from graph.nao_entendi import nao_entendi
 from graph.informacoes import informacoes
 from banco_dados.message_history import save_message, get_history
-from update_info import fetch_bot_info
+from django_utils.update_info import fetch_bot_info
 
 
 
@@ -79,7 +80,24 @@ def roteador(state: AgentState, config: RunnableConfig):
 
 def formatador(state: AgentState, config: RunnableConfig):
 
-    model = ChatOpenAI(model="gpt-4.1")
+    class Separador(BaseModel):
+        mensagens: List[str] = Field(description="""
+        ==IMPORTANTE: Sua resposta DEVE ser um JSON válido com esta estrutura exata:==
+        {{
+            "mensagens": ["primeira parte da mensagem", "segunda parte", "terceira parte"]
+        }}
+
+        Regras de formatação:
+        - SEMPRE retorne um objeto JSON com a chave "mensagens"
+        - O valor de "mensagens" é SEMPRE uma lista de strings
+        - Separe a resposta em 2-4 partes para simular conversa natural
+        - Se houver um link, coloque-o em uma string separada na lista
+        - Nunca retorne apenas a lista sem o objeto JSON completo""")
+
+    parser = PydanticOutputParser(pydantic_object=Separador)
+
+
+    model = ChatOpenAI(model="gpt-4.1", temperature=0)
 
     conversation_id = config.get("configurable", {}).get("conversation_id", "default") ##
     history = get_history(conversation_id) ##
@@ -93,9 +111,10 @@ def formatador(state: AgentState, config: RunnableConfig):
     except Exception as e:
         sys_prompt = f"Ocorreu um erro ao carregar as informações do bot: {e}"
     
+    sys_prompt = sys_prompt.replace("{LINK_AGENDAMENTO}", LINK_AGENDAMENTO)
     prompt_template = ChatPromptTemplate(
     input_variables=["history", "current_messages", "sys_prompt"],
-    # partial_variables={"format_instructions": parser.get_format_instructions()},
+    partial_variables={"format_instructions": parser.get_format_instructions()},
     messages=[
         ("system", sys_prompt),
         MessagesPlaceholder(variable_name="history"),
@@ -104,16 +123,21 @@ def formatador(state: AgentState, config: RunnableConfig):
 )
 
     full_input = {
-    "history": history,  # mensagens antigas
-    "current_messages": state["messages"],  # mensagens novas
-    "sys_prompt": sys_prompt,
-    "LINK_AGENDAMENTO": LINK_AGENDAMENTO
-}
+        "history": history,
+        "current_messages": state["messages"],
+    }
 
-    prompt = prompt_template.invoke(full_input)
-    resposta = model.invoke(prompt)
-    
-    return {"messages": [resposta]}
+    # prompt = prompt_template.invoke(full_input)
+
+    chain = prompt_template | model | parser
+
+    parsed_output = chain.invoke(full_input)
+
+    json_string_resposta = parsed_output.mensagens
+
+    final_ai_message = AIMessage(content=json_string_resposta)
+
+    return {"messages": [final_ai_message]}
 
 
 def should_continue(state):
