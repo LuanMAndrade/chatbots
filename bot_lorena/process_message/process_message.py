@@ -122,6 +122,7 @@ async def process_message(data, redis_client):
         chat_graph = build_chat_graph()
         respostas = chat_graph.invoke({"messages": [HumanMessage(content=final_text)],}, config=config)
         lista_de_mensagens = respostas["messages"][-1].content
+        lista_de_mensagens = lista_de_mensagens.split("@%&")
 
         #____________________________________________________________________________________________________________________________________________________________________________________________________________________
         # Envia a mensagem parte a parte

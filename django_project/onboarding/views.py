@@ -71,6 +71,7 @@ def dashboard_view(request):
         has_bot_info = bool(bot_info.info_text)
     except BotInfo.DoesNotExist:
         has_bot_info = False
+    has_bot_info= True
     
     context = {
         'pending_count': pending_count,

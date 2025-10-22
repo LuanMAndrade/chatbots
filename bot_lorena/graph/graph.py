@@ -79,23 +79,6 @@ def roteador(state: AgentState, config: RunnableConfig):
 
 def formatador(state: AgentState, config: RunnableConfig):
 
-    class Separador(BaseModel):
-        mensagens: List[str] = Field(description="""
-        ==IMPORTANTE: Sua resposta DEVE ser um JSON válido com esta estrutura exata:==
-        {{
-            "mensagens": ["primeira parte da mensagem", "segunda parte", "terceira parte"]
-        }}
-
-        Regras de formatação:
-        - SEMPRE retorne um objeto JSON com a chave "mensagens"
-        - O valor de "mensagens" é SEMPRE uma lista de strings
-        - Separe a resposta em 2-4 partes para simular conversa natural
-        - Se houver um link, coloque-o em uma string separada na lista
-        - Nunca retorne apenas a lista sem o objeto JSON completo""")
-
-    parser = PydanticOutputParser(pydantic_object=Separador)
-
-
     model = ChatOpenAI(model="gpt-4.1", temperature=0)
 
     conversation_id = config.get("configurable", {}).get("conversation_id", "default") ##
@@ -113,7 +96,7 @@ def formatador(state: AgentState, config: RunnableConfig):
     sys_prompt = sys_prompt.replace("{LINK_AGENDAMENTO}", LINK_AGENDAMENTO)
     prompt_template = ChatPromptTemplate(
     input_variables=["history", "current_messages", "sys_prompt"],
-    partial_variables={"format_instructions": parser.get_format_instructions()},
+    # partial_variables={"format_instructions": parser.get_format_instructions()},
     messages=[
         ("system", sys_prompt),
         MessagesPlaceholder(variable_name="history"),
@@ -126,17 +109,11 @@ def formatador(state: AgentState, config: RunnableConfig):
         "current_messages": state["messages"],
     }
 
-    # prompt = prompt_template.invoke(full_input)
+    prompt = prompt_template.invoke(full_input)
 
-    chain = prompt_template | model | parser
+    resposta = model.invoke(prompt)
 
-    parsed_output = chain.invoke(full_input)
-
-    json_string_resposta = parsed_output.mensagens
-
-    final_ai_message = AIMessage(content=json_string_resposta)
-
-    return {"messages": [final_ai_message]}
+    return {"messages": [resposta]}
 
 
 def should_continue(state):

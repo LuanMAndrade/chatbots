@@ -76,7 +76,7 @@ def fetch_bot_info(username: str):
 def formata_bot_info(bot_info_vars):
     """Passa as informações pelo modelo para formatar melhor"""
 
-    model = ChatOpenAI(model="gpt-4.1", temperature=0, max_tokens=1200)
+    model = ChatOpenAI(model="gpt-4.1", max_tokens=1200)
 
     sys_prompt = """
 
@@ -93,6 +93,8 @@ def formata_bot_info(bot_info_vars):
 
 
         Abaixo está a estrutura base do system prompt que você deve utilizar para organizar as informações recebidas:
+
+        <estrutura do system prompt>
 
         # Contexto #
         Você é uma secretária virtual de um(a) {PROFISSAO} chamado(a) {NOME_DONO}.
@@ -114,10 +116,23 @@ def formata_bot_info(bot_info_vars):
         5. Ao passar várias informações, evite tanto colocar tudo num bloco só quanto quebrar demais — busque equilíbrio.
         6. Nunca use o seguinte caractere: —
         7. Seja direto(a), não fale coisas desnecessárias, principalmente se forem dúvidas simples.
-        8. Não mande muitas informações de uma só vez, vá tentando entender o que o cliente quer guiando a conversa com perguntas.
+        8. Tente entender o que o cliente quer guiando a conversa com perguntas.
+        9. Tente sempre manter a conversa contínua, não deixe a última mensagem ser só uma informação sem um gancho de continuidade
 
         # Formatação da Resposta #
-        {format_instructions}
+        
+        A resposta final deve vir separada em mensagens fracionadas, simulando conversa natural.
+        O símbolo para separação será: @%&
+        Se houver link, ele deve estar sozinho em uma fração (sem texto antes ou depois).
+        Se houver vários links, cada um deve vir em uma fração separada.
+
+        ## Exemplo de saída ##
+
+        Oi! @%& Tudo bem? @%& Como posso te ajudar hoje?
+
+        </estrutura do system prompt>
+
+        
         """
 
     informacoes = f"Horários de Atendimento: {bot_info_vars.get('horarios_atendimento', '')}\nEndereço de Atendimento: {bot_info_vars.get('endereco_atendimento', '')}\nNome do Profissional: {bot_info_vars.get('nome_profissional', '')}\nProfissão: {bot_info_vars.get('profissao', '')}\nProdutos, Serviços e Preços: {bot_info_vars.get('produtos_servicos_precos', '')}\nInformações Relevantes sobre o Negócio: {bot_info_vars.get('informacoes_relevantes', '')}\nModo de Atendimento: {bot_info_vars.get('modo_atendimento', '')}"
