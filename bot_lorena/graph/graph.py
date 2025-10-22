@@ -26,7 +26,7 @@ from django_utils.update_info import fetch_bot_info
 
 LINK_AGENDAMENTO = os.getenv("LINK_AGENDAMENTO")
 
-tools = [informacoes, nao_entendi]
+tools = [nao_entendi]
 
 load_dotenv()
 
@@ -50,8 +50,7 @@ def roteador(state: AgentState, config: RunnableConfig):
         Você tem acesso às ferramentas abaixo. Use-as quando necessário para responder a(o) cliente
 
         <Ferramentas>
-        1. informacoes - Use quando precisar de informações sobre o serviço (Ex: Atende remoto?, Qual o endereço?, Como funciona o serviço?, Quais são os produtos?, Pacotes e Preços?, etc)
-        2. nao_entendi - Use quando não entender a solicitação da cliente. Só use como último recurso.
+        1. nao_entendi - Use quando não entender a solicitação da cliente. Só use como último recurso.
         </Ferramentas>
 
         # Regras #

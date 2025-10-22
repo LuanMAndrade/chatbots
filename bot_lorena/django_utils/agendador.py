@@ -10,15 +10,12 @@ import re
 
 def get_db_connection():
     """Cria e retorna uma conexão com o banco de dados."""
-    env_path = Path(__file__).resolve().parent.parent.parent / '.env'
-    load_dotenv(dotenv_path=env_path)
-
     try:
         conn = psycopg2.connect(
             dbname=os.getenv('POSTGRES_DB'),
             user=os.getenv('POSTGRES_USER'),
             password=os.getenv('POSTGRES_PASSWORD'),
-            host='localhost',
+            host='postgres',  # Este host depende da sua configuração de rede/docker
             port='5432'
         )
         return conn
@@ -65,7 +62,7 @@ def get_scheduled_messages():
 
 async def send_message(sender: str, message_text: str):
     """Envia a mensagem via Evolution API."""
-    load_dotenv()
+    # A linha load_dotenv() foi removida daqui também.
     INSTANCIA_EVOLUTION_API = os.getenv("INSTANCIA_EVOLUTION_API")
     EVOLUTION_TEXT_URL_TEMPLATE = os.getenv("EVOLUTION_TEXT_URL")
     EVOLUTION_PORT = os.getenv("EVOLUTION_PORT")
@@ -75,6 +72,7 @@ async def send_message(sender: str, message_text: str):
     )
     EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY")
 
+    # O resto da função permanece igual
     headers = {
         "Content-Type": "application/json",
         "apikey": EVOLUTION_API_KEY
