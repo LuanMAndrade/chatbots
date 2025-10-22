@@ -179,8 +179,7 @@ def get_daily_usage_breakdown(project_name, start_time, end_time):
                 if run.completion_tokens:
                     daily_data[day_str]['output_tokens'] += run.completion_tokens
                 if run.total_cost:
-                    daily_data[day_str]['cost'] += run.total_cost
+                    daily_data[day_str]['cost'] += run.total_cost*dolar
 
-    daily_data[day_str]['cost'] *= dolar
     return sorted(daily_data.values(), key=lambda x: x['date'])
     

@@ -12,6 +12,7 @@ import subprocess
 import sys
 import logging
 import calendar
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -54,11 +55,10 @@ def profile_view(request):
 
 @login_required
 def dashboard_view(request):
-    # Estatísticas rápidas
+    # CORREÇÃO: Estatísticas - conta todas as pendentes
     pending_count = AutomatedMessage.objects.filter(
         user=request.user,
-        status='pending',
-        send_at__gte=timezone.now()
+        status='pending'
     ).count()
     
     sent_count = AutomatedMessage.objects.filter(
@@ -150,11 +150,12 @@ def add_info_view(request):
 def auto_messages_dashboard_view(request):
     now = timezone.now()
     
-    # Mensagens pendentes (futuras)
+    # CORREÇÃO: Mensagens pendentes - filtra APENAS por status
+    # Agora mostra todas as pendentes, mesmo que já tenha passado da hora
+    # (elas sumirão quando o agendador mudar o status)
     upcoming_messages = AutomatedMessage.objects.filter(
         user=request.user,
-        status='pending',
-        send_at__gte=now
+        status='pending'
     ).order_by('send_at')[:10]
     
     # Mensagens enviadas recentemente
@@ -220,6 +221,7 @@ def auto_messages_form_view(request, message_id=None):
         else:
             contact_name = request.POST.get('contact_name')
             phone_number = request.POST.get('phone_number')
+            phone_number = '55' + re.sub(r'\D', '', phone_number)
             
             if not contact_name or not phone_number:
                 messages.error(request, 'Nome e número são obrigatórios.')

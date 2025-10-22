@@ -16,6 +16,12 @@ Funcionalidades do robô
 •	Quando identifica intenção de pagamento envia mensagem no whatsapp pessoal do dono para finalizar
 •	Faz agendamento
 
+Apresentação
+•	1 Semana grátis pra Testar
+•	Pedir numero backup
+•	Criar o cal.com
+
+
 Mudar para novo projeto
 •	Mudar nome da pasta "bot_nome"
 •	Criar usuario no django
