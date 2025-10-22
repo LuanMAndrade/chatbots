@@ -183,9 +183,4 @@ def get_daily_usage_breakdown(project_name, start_time, end_time):
 
     daily_data[day_str]['cost'] *= dolar
     return sorted(daily_data.values(), key=lambda x: x['date'])
-
-
-if __name__ == "__main__":
-    x = get_available_months(billing_day=5)
-    y = get_month_period(2025, 2, billing_day=5)
     
