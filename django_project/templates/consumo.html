@@ -13,12 +13,46 @@
     .selectors { display: flex; gap: 20px; }
     .selector select { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; }
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
-    .metric-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 4px solid #3498db; }
+    .metric-card { background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); border-left: 4px solid #3498db; position: relative; }
     .metric-card h3 { font-size: 0.9rem; color: #666; margin-bottom: 8px; text-transform: uppercase; }
     .metric-value { font-size: 2rem; font-weight: 700; color: #2c3e50; }
+    .metric-subtitle { font-size: 0.85rem; color: #7f8c8d; margin-top: 8px; }
+    
+    /* Barra de progresso para porcentagem */
+    .progress-bar-container { 
+        width: 100%; 
+        height: 8px; 
+        background: #ecf0f1; 
+        border-radius: 4px; 
+        margin-top: 12px; 
+        overflow: hidden;
+    }
+    .progress-bar-fill { 
+        height: 100%; 
+        background: linear-gradient(90deg, #27ae60, #f39c12, #e74c3c); 
+        border-radius: 4px; 
+        transition: width 0.5s ease;
+    }
+    .progress-bar-fill.full {
+        background: #e74c3c;
+    }
+    
     .charts-container { display: grid; grid-template-columns: 1fr; gap: 30px; }
     .chart-section { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
     .error-box { background-color: #f8d7da; color: #721c24; padding: 15px; border: 1px solid #f5c6cb; border-radius: 4px; margin-bottom: 20px; }
+    
+    /* Badge de status */
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-top: 8px;
+    }
+    .status-badge.safe { background: #d4edda; color: #155724; }
+    .status-badge.warning { background: #fff3cd; color: #856404; }
+    .status-badge.danger { background: #f8d7da; color: #721c24; }
 </style>
 
 <div class="dashboard-header">
@@ -49,22 +83,46 @@
     </div>
 {% else %}
     <div class="metrics-grid">
+        <!-- Tokens Totais -->
         <div class="metric-card" style="border-left-color: #3498db;">
             <h3>Tokens Totais</h3>
             <p class="metric-value">{{ usage_data.total_tokens|floatformat:0 }}</p>
-            <small>{{ usage_data.run_count }} execuções</small>
+            <small class="metric-subtitle">de {{ usage_data.tokens_incluidos|floatformat:0 }} incluídos</small>
         </div>
-        <div class="metric-card" style="border-left-color: #2ecc71;">
-            <h3>Tokens de Entrada</h3>
-            <p class="metric-value">{{ usage_data.input_tokens|floatformat:0 }}</p>
+        
+        <!-- Porcentagem de Consumo -->
+        <div class="metric-card" style="border-left-color: {% if usage_data.porcentagem_consumo < 70 %}#27ae60{% elif usage_data.porcentagem_consumo < 90 %}#f39c12{% else %}#e74c3c{% endif %};">
+            <h3>Porcentagem de Consumo</h3>
+            <p class="metric-value">{{ usage_data.porcentagem_consumo|floatformat:1 }}%</p>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill {% if usage_data.porcentagem_consumo >= 100 %}full{% endif %}" 
+                     style="width: {{ usage_data.porcentagem_consumo }}%;"></div>
+            </div>
+            {% if usage_data.porcentagem_consumo < 70 %}
+                <span class="status-badge safe">✓ Consumo Normal</span>
+            {% elif usage_data.porcentagem_consumo < 100 %}
+                <span class="status-badge warning">⚠ Limite Próximo</span>
+            {% else %}
+                <span class="status-badge danger">⚠ Limite Atingido</span>
+            {% endif %}
         </div>
-        <div class="metric-card" style="border-left-color: #f39c12;">
-            <h3>Tokens de Saída</h3>
-            <p class="metric-value">{{ usage_data.output_tokens|floatformat:0 }}</p>
+        
+        <!-- Mensagens Enviadas -->
+        <div class="metric-card" style="border-left-color: #9b59b6;">
+            <h3>Mensagens Enviadas</h3>
+            <p class="metric-value">{{ usage_data.run_count }}</p>
+            <small class="metric-subtitle">execuções no período</small>
         </div>
-        <div class="metric-card" style="border-left-color: #e74c3c;">
-            <h3>Custo Total (BRL)</h3>
+        
+        <!-- Custo Total -->
+        <div class="metric-card" style="border-left-color: {% if usage_data.total_cost > 0 %}#e74c3c{% else %}#27ae60{% endif %};">
+            <h3>Custo Extra (BRL)</h3>
             <p class="metric-value">R${{ usage_data.total_cost|floatformat:2 }}</p>
+            {% if usage_data.total_cost == 0 %}
+                <small class="metric-subtitle">✓ Sem custos extras</small>
+            {% else %}
+                <small class="metric-subtitle">⚠ Tokens excedentes</small>
+            {% endif %}
         </div>
     </div>
 
@@ -101,23 +159,32 @@
                             label: 'Total de Tokens',
                             data: dailyData.map(d => d.total_tokens),
                             borderColor: '#3498db',
-                            tension: 0.1
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            tension: 0.4,
+                            fill: true
                         },
                         {
                             label: 'Tokens de Entrada',
                             data: dailyData.map(d => d.input_tokens),
                             borderColor: '#2ecc71',
-                            tension: 0.1
+                            tension: 0.4
                         },
                         {
                             label: 'Tokens de Saída',
                             data: dailyData.map(d => d.output_tokens),
                             borderColor: '#f39c12',
-                            tension: 0.1
+                            tension: 0.4
                         }
                     ]
                 },
-                options: { responsive: true }
+                options: { 
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
             });
         }
 
@@ -129,12 +196,19 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Custo (BRL)',
+                        label: 'Custo Extra (BRL)',
                         data: dailyData.map(d => d.cost),
-                        backgroundColor: '#e74c3c',
+                        backgroundColor: dailyData.map(d => d.cost > 0 ? '#e74c3c' : '#27ae60'),
                     }]
                 },
-                options: { responsive: true }
+                options: { 
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
             });
         }
     });

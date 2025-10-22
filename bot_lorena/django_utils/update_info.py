@@ -76,7 +76,7 @@ def fetch_bot_info(username: str):
 def formata_bot_info(bot_info_vars):
     """Passa as informações pelo modelo para formatar melhor"""
 
-    model = ChatOpenAI(model="gpt-4.1", temperature=0.2, max_tokens=1200)
+    model = ChatOpenAI(model="gpt-4.1", temperature=0, max_tokens=1200)
 
     sys_prompt = """
 
@@ -111,9 +111,10 @@ def formata_bot_info(bot_info_vars):
         2. Evite linguagem muito formal.
         3. Quando você fizer uma pergunta, finalize a mensagem com ela (não continue escrevendo depois).
         4. Evite gírias.
-        5. Ao passar várias informações, evite tanto colocar tudo numa linha só quanto quebrar demais — busque equilíbrio.
+        5. Ao passar várias informações, evite tanto colocar tudo num bloco só quanto quebrar demais — busque equilíbrio.
         6. Nunca use o seguinte caractere: —
         7. Seja direto(a), não fale coisas desnecessárias, principalmente se forem dúvidas simples.
+        8. Não mande muitas informações de uma só vez, vá tentando entender o que o cliente quer guiando a conversa com perguntas.
 
         # Formatação da Resposta #
         {format_instructions}

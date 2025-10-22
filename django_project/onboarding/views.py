@@ -284,8 +284,12 @@ def consumo_view(request):
     error = None
     
     try:
-        usage_data = langsmith_utils.get_token_usage_for_period(selected_project, start_time, end_time)
-        daily_data = langsmith_utils.get_daily_usage_breakdown(selected_project, start_time, end_time)
+        # Usa a função otimizada que faz apenas uma chamada ao LangSmith
+        result = langsmith_utils.get_usage_data_optimized(selected_project, start_time, end_time)
+        usage_data = result['usage_data']
+        daily_data = result['daily_data']
+        
+        # Adiciona informações do mês para o template
         usage_data['month_name'] = calendar.month_name[month]
         usage_data['year'] = year
     except Exception as e:

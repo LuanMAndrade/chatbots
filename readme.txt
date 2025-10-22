@@ -36,7 +36,7 @@ Mudar para novo projeto
 •	Pedir numero de backup
 •	Criar o cal.com
 •	Reiniciar os serviços
-•	
+•	Mudar o billing day
 
 
 sudo systemctl restart bot_

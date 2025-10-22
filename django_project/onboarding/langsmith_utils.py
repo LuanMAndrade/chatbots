@@ -10,6 +10,9 @@ logger = logging.getLogger(__name__)
 
 dolar = 6
 
+# CONFIGURAÇÃO: Defina aqui a quantidade de tokens incluídos no plano
+TOKENS_INCLUIDOS_PLANO = 1  # 1 milhão de tokens incluídos
+
 def get_langsmith_client():
     """Initializes the LangSmith client."""
     try:
@@ -22,7 +25,7 @@ def get_langsmith_client():
         logger.error(f"Error connecting to LangSmith: {e}")
         return None
 
-def get_month_period(year, month, billing_day=5):
+def get_month_period(year, month, billing_day=18):
     """Calculates the month's period based on the billing day."""
     current_date = datetime.now()
     current_day = current_date.day
@@ -59,7 +62,7 @@ def get_month_period(year, month, billing_day=5):
     return start_time, end_time
 
 
-def get_available_months(billing_day=5):
+def get_available_months(billing_day=18):
     """
     Retorna os meses disponíveis baseado no dia de cobrança
     """
@@ -107,59 +110,19 @@ def get_available_months(billing_day=5):
     return months
 
 
-def get_token_usage_for_period(project_name, start_time, end_time):
-    """Extracts token usage metrics from LangSmith for a given period."""
+def get_usage_data_optimized(project_name, start_time, end_time):
+    """
+    Função otimizada que busca todos os dados necessários em uma única chamada
+    e calcula estatísticas totais e diárias de uma só vez.
+    
+    Retorna:
+        dict: Contém usage_data (totais) e daily_data (breakdown diário)
+    """
     client = get_langsmith_client()
     if not client:
         raise Exception("Could not connect to LangSmith.")
 
-    runs = list(client.list_runs(
-        project_name=project_name,
-        start_time=start_time,
-        end_time=end_time,
-        run_type="chain" # Only fetch parent runs to count executions
-    ))
-
-    # CORRECTED CODE
-    total_stats = client.get_run_stats(
-    project_names=[project_name], # <-- LIKE THIS
-    start_time=start_time,
-    end_time=end_time
-    )
-
-    # Safely access total_tokens, providing a default of 0 if not found
-    total_tokens = total_stats.get('total_tokens', 0)
-    prompt_tokens = total_stats.get('prompt_tokens', 0)
-    completion_tokens = total_stats.get('completion_tokens', 0)
-    total_cost = total_stats.get('total_cost', 0)
-
-    return {
-        'input_tokens': prompt_tokens,
-        'output_tokens': completion_tokens,
-        'total_tokens': total_tokens,
-        'total_cost': total_cost * dolar,
-        'run_count': len(runs),
-        'period_start': start_time.isoformat(),
-        'period_end': end_time.isoformat(),
-    }
-
-def get_daily_usage_breakdown(project_name, start_time, end_time):
-    """Returns a daily breakdown of token usage for a specific period."""
-    client = get_langsmith_client()
-    if not client:
-        raise Exception("Could not connect to LangSmith.")
-
-    daily_data = {}
-    current_day = start_time
-    while current_day <= end_time:
-        day_str = current_day.strftime('%Y-%m-%d')
-        daily_data[day_str] = {
-            'date': day_str,
-            'total_tokens': 0, 'input_tokens': 0, 'output_tokens': 0,
-            'cost': 0, 'run_count': 0
-        }
-        current_day += timedelta(days=1)
-
+    # Busca runs para contagem de execuções
     runs = list(client.list_runs(
         project_name=project_name,
         start_time=start_time,
@@ -167,19 +130,104 @@ def get_daily_usage_breakdown(project_name, start_time, end_time):
         run_type="chain"
     ))
 
-    for run in runs:
-        if run.start_time:
-            day_str = run.start_time.strftime('%Y-%m-%d')
-            if day_str in daily_data:
-                daily_data[day_str]['run_count'] +=1
-                if run.total_tokens:
-                    daily_data[day_str]['total_tokens'] += run.total_tokens
-                if run.prompt_tokens:
-                    daily_data[day_str]['input_tokens'] += run.prompt_tokens
-                if run.completion_tokens:
-                    daily_data[day_str]['output_tokens'] += run.completion_tokens
-                if run.total_cost:
-                    daily_data[day_str]['cost'] += run.total_cost*dolar
+    # Busca estatísticas totais
+    total_stats = client.get_run_stats(
+        project_names=[project_name],
+        start_time=start_time,
+        end_time=end_time,
+        run_type="chain"
+    )
 
-    return sorted(daily_data.values(), key=lambda x: x['date'])
+    # Extrai totais
+    total_tokens = total_stats.get('total_tokens', 0)
+    prompt_tokens = total_stats.get('prompt_tokens', 0)
+    completion_tokens = total_stats.get('completion_tokens', 0)
+    total_cost_usd = total_stats.get('total_cost', 0)
     
+    # Calcula porcentagem de consumo
+    porcentagem_consumo = min((total_tokens / TOKENS_INCLUIDOS_PLANO) * 100, 100) if TOKENS_INCLUIDOS_PLANO > 0 else 0
+    
+    # Calcula custo em BRL (só cobra após 100%)
+    if porcentagem_consumo >= 100:
+        tokens_excedentes = total_tokens - TOKENS_INCLUIDOS_PLANO
+        # Assume o mesmo custo médio por token do total
+        custo_por_token = (total_cost_usd * dolar) / total_tokens if total_tokens > 0 else 0
+        custo_total_brl = tokens_excedentes * custo_por_token
+    else:
+        custo_total_brl = 0
+    
+    
+    
+    # Prepara estrutura para dados diários
+    daily_data = {}
+    current_day = start_time
+    while current_day <= end_time:
+        day_str = current_day.strftime('%Y-%m-%d')
+        daily_data[day_str] = {
+            'date': day_str,
+            'total_tokens': 0,
+            'input_tokens': 0,
+            'output_tokens': 0,
+            'cost': 0,
+            'run_count': 0
+        }
+        current_day += timedelta(days=1)
+
+    # Processa runs para breakdown diário
+    tokens_acumulados_por_dia = {}
+    total_acumulado = 0
+    
+    # Ordena runs por data
+    runs_sorted = sorted([r for r in runs if r.start_time], key=lambda x: x.start_time)
+    contador = 0
+    for run in runs_sorted:
+        if run.name == 'LangGraph':
+            contador += 1
+            if run.start_time:
+                day_str = (run.start_time - timedelta(hours=3)).strftime('%Y-%m-%d')
+                if day_str in daily_data:
+                    daily_data[day_str]['run_count'] += 1
+                    
+                    run_tokens = run.total_tokens or 0
+                    total_acumulado += run_tokens
+                    tokens_acumulados_por_dia[day_str] = total_acumulado
+                    
+                    if run.total_tokens:
+                        daily_data[day_str]['total_tokens'] += run.total_tokens
+                    if run.prompt_tokens:
+                        daily_data[day_str]['input_tokens'] += run.prompt_tokens
+                    if run.completion_tokens:
+                        daily_data[day_str]['output_tokens'] += run.completion_tokens
+                    
+                    # Calcula custo diário baseado na lógica de 100%
+                    porcentagem_dia = min((total_acumulado / TOKENS_INCLUIDOS_PLANO) * 100, 100) if TOKENS_INCLUIDOS_PLANO > 0 else 0
+                    
+                    if porcentagem_dia >= 100 and run.total_cost:
+                        # Só adiciona custo se já ultrapassou os tokens incluídos
+                        tokens_excedentes_run = max(0, total_acumulado - TOKENS_INCLUIDOS_PLANO)
+                        if tokens_excedentes_run > 0:
+                            daily_data[day_str]['cost'] += run.total_cost * dolar
+
+    # Prepara dados totais
+    usage_data = {
+        'input_tokens': prompt_tokens,
+        'output_tokens': completion_tokens,
+        'total_tokens': total_tokens,
+        'total_cost': custo_total_brl,
+        'run_count': contador,
+        'porcentagem_consumo': porcentagem_consumo,
+        'tokens_incluidos': TOKENS_INCLUIDOS_PLANO,
+        'period_start': start_time.isoformat(),
+        'period_end': end_time.isoformat(),
+    }
+
+    return {
+        'usage_data': usage_data,
+        'daily_data': sorted(daily_data.values(), key=lambda x: x['date'])
+    }
+
+# if __name__ == "__main__":
+#     project_name = 'bot_lorena'
+#     start_time = datetime.now() - timedelta(days=30)
+#     end_time = datetime.now()
+#     retorno = get_usage_data_optimized(project_name, start_time, end_time)
