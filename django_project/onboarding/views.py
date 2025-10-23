@@ -7,6 +7,7 @@ from django.contrib import messages
 from .models import AutomatedMessage, BotInfo
 from . import langsmith_utils
 from . import evolution_api
+import psycopg2
 import os
 import subprocess
 import sys
@@ -306,3 +307,101 @@ def consumo_view(request):
         'error': error,
     }
     return render(request, 'consumo.html', context)
+
+@login_required
+def clear_whatsapp_contacts_view(request):
+    """View para limpar contatos do WhatsApp"""
+    
+    if request.method == 'POST':
+        username = request.user.username
+        instance_name = f"bot_{username}"
+        
+        try:
+            conn = psycopg2.connect(
+                dbname=os.getenv('POSTGRES_DB'),
+                user=os.getenv('POSTGRES_USER'),
+                password=os.getenv('POSTGRES_PASSWORD'),
+                host='postgres',
+                port='5432'
+            )
+            
+            with conn.cursor() as cur:
+                cur.execute("""
+                    SELECT id FROM public."Instance"
+                    WHERE name = %s
+                """, (instance_name,))
+                
+                result = cur.fetchone()
+                
+                if not result:
+                    messages.error(request, 'Instância não encontrada.')
+                    return redirect('auto_messages_dashboard')
+                
+                instance_id = result[0]
+                
+                cur.execute("""
+                    SELECT COUNT(*) FROM public."Contact"
+                    WHERE "instanceId" = %s
+                """, (instance_id,))
+                
+                count = cur.fetchone()[0]
+                
+                if count == 0:
+                    messages.info(request, 'Nenhum contato encontrado para deletar.')
+                    return redirect('auto_messages_dashboard')
+                
+                cur.execute("""
+                    DELETE FROM public."Contact"
+                    WHERE "instanceId" = %s
+                """, (instance_id,))
+                
+                conn.commit()
+                
+                messages.success(
+                    request, 
+                    f'✅ {count} contato(s) deletado(s) com sucesso!'
+                )
+                
+        except Exception as e:
+            messages.error(request, f'Erro ao deletar contatos: {e}')
+        
+        finally:
+            if conn:
+                conn.close()
+        
+        return redirect('auto_messages_dashboard')
+    
+    # GET - Mostra página de confirmação
+    username = request.user.username
+    instance_name = f"bot_{username}"
+    
+    try:
+        conn = psycopg2.connect(
+            dbname=os.getenv('POSTGRES_DB'),
+            user=os.getenv('POSTGRES_USER'),
+            password=os.getenv('POSTGRES_PASSWORD'),
+            host='postgres',
+            port='5432'
+        )
+        
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT COUNT(*) 
+                FROM public."Contact" c
+                JOIN public."Instance" i ON c."instanceId" = i.id
+                WHERE i.name = %s
+            """, (instance_name,))
+            
+            contact_count = cur.fetchone()[0]
+    
+    except Exception as e:
+        contact_count = 0
+        messages.error(request, f'Erro ao contar contatos: {e}')
+    
+    finally:
+        if conn:
+            conn.close()
+    
+    return render(request, 'clear_contacts_confirm.html', {
+        'contact_count': contact_count
+    })

@@ -81,58 +81,14 @@ def formata_bot_info(bot_info_vars):
     sys_prompt = """
 
         # Contexto #
-        Você é um formatador de system prompt para um chatbot de atendimento ao cliente.
+        Você é um especialista em formatar textos para system prompts de chatbots.
 
         # Instruções #
 
-        Você reberá algumas informações sobre profissão, serviços, produtos, preços, modo de atendimento, etc.
-        Seu trabalho é organizar essas informações dentro de uma estrutura já existente de forma que fique bem formatada para ser utilizada como system prompt de um chatbot.
-        Você deve manter o que já existe e somente acrescentar as informações onde for necessário.
-        Você deve reescrever, se for necessário, as informações do cliente para que fique o mais claro, bem formatado e objetivo possível.
-        Em hipotese alguma mexa no tópico "Formatação das respostas".
-
-
-        Abaixo está a estrutura base do system prompt que você deve utilizar para organizar as informações recebidas:
-
-        <estrutura do system prompt>
-
-        # Contexto #
-        Você é uma secretária virtual de um(a) {PROFISSAO} chamado(a) {NOME_DONO}.
-
-        # Regras de atendimento #
-        ==NUNCA invente informações. Não crie informações inexistentes nem sugira opções que não sabe se existem.==
-        1. Não diga que vai fazer algo que você não consegue (ex.: tirar fotos).
-        2. Tire todas as dúvidas do cliente com base nas informações que você tem.
-        3. Qualquer demanda que fuja das informações que você tem, informe ao cliente que a demanda que ele esta trazendo só pode ser tratada com a {NOME_DONO} e que assim que possível ele será atendido.
-        4. Se o cliente pedir para falar com um humano, informe que a {NOME_DONO} irá entrar em contato assim que possível.
-        
-
-        # Modo de falar #
-
-        1. Tenha uma conversa fluida, evitando textos muito longos. Seja objetiva, mas não seca.
-        2. Evite linguagem muito formal.
-        3. Quando você fizer uma pergunta, finalize a mensagem com ela (não continue escrevendo depois).
-        4. Evite gírias.
-        5. Ao passar várias informações, evite tanto colocar tudo num bloco só quanto quebrar demais — busque equilíbrio.
-        6. Nunca use o seguinte caractere: —
-        7. Seja direto(a), não fale coisas desnecessárias, principalmente se forem dúvidas simples.
-        8. Tente entender o que o cliente quer guiando a conversa com perguntas.
-        9. Tente sempre manter a conversa contínua, não deixe a última mensagem ser só uma informação sem um gancho de continuidade
-
-        # Formatação da Resposta #
-        
-        A resposta final deve vir separada em mensagens fracionadas, simulando conversa natural.
-        O símbolo para separação será: @%&
-        Se houver link, ele deve estar sozinho em uma fração (sem texto antes ou depois).
-        Se houver vários links, cada um deve vir em uma fração separada.
-
-        ## Exemplo de saída ##
-
-        Oi! @%& Tudo bem? @%& Como posso te ajudar hoje?
-
-        </estrutura do system prompt>
-
-        
+        - Você reberá algumas informações sobre profissão, serviços, produtos, preços, modo de atendimento, etc.
+        - Seu trabalho é organizar essas informações de forma que fique bem formatada para ser utilizada como system prompt de um chatbot.
+        - Você deve reescrever as informações do cliente para que fique o mais claro, bem formatado e objetivo possível.
+        - O texto que você gerar será encaixado em um system prompt, onde já terá o contexto de ser uma secretária virtual.
         """
 
     informacoes = f"Horários de Atendimento: {bot_info_vars.get('horarios_atendimento', '')}\nEndereço de Atendimento: {bot_info_vars.get('endereco_atendimento', '')}\nNome do Profissional: {bot_info_vars.get('nome_profissional', '')}\nProfissão: {bot_info_vars.get('profissao', '')}\nProdutos, Serviços e Preços: {bot_info_vars.get('produtos_servicos_precos', '')}\nInformações Relevantes sobre o Negócio: {bot_info_vars.get('informacoes_relevantes', '')}\nModo de Atendimento: {bot_info_vars.get('modo_atendimento', '')}"
@@ -144,10 +100,18 @@ def formata_bot_info(bot_info_vars):
 
     project_path = Path(__file__).resolve().parent.parent
     info_file_path = project_path / 'data' / 'inf_loja.txt'
+    template_file_path = project_path / 'data' / 'template.txt'
 
     try:
+        with open(template_file_path, 'r', encoding='utf-8') as f:
+            template_file = f.read()
+        prompt = template_file.replace("{PROFISSAO}", bot_info_vars.get('profissao', ''))
+        prompt = prompt.replace("{NOME_DONO}", bot_info_vars.get('nome_profissional', ''))
+        prompt = prompt.replace("{INFORMACOES_BOT}", saida.content)
+
+
         with open(info_file_path, 'w', encoding='utf-8') as f:
-            f.write(saida.content)
+            f.write(prompt)
         print(f"✓ Informações do bot salvas com sucesso em '{info_file_path}'")
     except Exception as e:
         print(f"Erro ao salvar informações do bot: {e}", file=sys.stderr)

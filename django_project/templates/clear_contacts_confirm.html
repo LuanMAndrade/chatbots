@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Limpar Contatos - Chatbot Manager{% endblock %}
+
+{% block extra_css %}
+<style>
+    .warning-card {
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .warning-icon {
+        font-size: 4rem;
+        color: #ff9800;
+        margin-bottom: 1rem;
+    }
+    
+    .warning-card h2 {
+        color: #856404;
+        margin-bottom: 1rem;
+    }
+    
+    .warning-card p {
+        color: #664d03;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+    
+    .contact-count {
+        background: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #856404;
+        margin: 1rem 0;
+    }
+    
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="warning-card">
+    <div class="warning-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    
+    <h2>⚠️ Limpar Contatos do WhatsApp</h2>
+    
+    <p>
+        Esta ação irá <strong>deletar permanentemente</strong> todos os contatos 
+        salvos na sua instância do WhatsApp.
+    </p>
+    
+    <div class="contact-count">
+        📱 {{ contact_count }} contato(s) será(ão) deletado(s)
+    </div>
+    
+    <p style="color: #dc3545; font-weight: 600;">
+        ⚠️ Esta ação não pode ser desfeita!
+    </p>
+    
+    <div class="button-group">
+        <a href="{% url 'auto_messages_dashboard' %}" class="btn btn-outline">
+            <i class="fas fa-times"></i> Cancelar
+        </a>
+        
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger" 
+                    onclick="return confirm('Tem CERTEZA que deseja deletar TODOS os contatos?')">
+                <i class="fas fa-trash"></i> Sim, Deletar Tudo
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

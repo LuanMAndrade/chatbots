@@ -15,4 +15,5 @@ urlpatterns = [
     path('auto_messages/delete/<int:message_id>/', views.auto_messages_delete_view, name='auto_messages_delete'),
     path('consumo/', views.consumo_view, name='consumo'),
     path('profile/', views.profile_view, name='profile'),
+    path('clear-contacts/', views.clear_whatsapp_contacts_view, name='clear_contacts'),
 ]

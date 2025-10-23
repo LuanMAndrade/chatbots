@@ -37,7 +37,7 @@ EVOLUTION_PRESENCE_URL = EVOLUTION_PRESENCE_URL_TEMPLATE.format(INSTANCIA=INSTAN
 EVOLUTION_MEDIA_URL_TEMPLATE = os.getenv("EVOLUTION_MEDIA_URL")
 EVOLUTION_MEDIA_URL = EVOLUTION_MEDIA_URL_TEMPLATE.format(INSTANCIA=INSTANCIA_EVOLUTION_API)
 
-NUMERO_BACKUP = os.getenv("NUMERO_BACKUP")
+NUMERO_PARA_ERROS = os.getenv("NUMERO_PARA_ERROS")
 
 LOCK_TTL = 300   # segundos
 
@@ -224,7 +224,7 @@ async def process_message(data, redis_client):
             url = EVOLUTION_TEXT_URL
             await client.post(url, json=payload, headers=headers, timeout=30)
             payload = {
-                        "number": F'{NUMERO_BACKUP}@s.whatsapp.net',
+                        "number": F'{NUMERO_PARA_ERROS}@s.whatsapp.net',
                         "type": "text",
                         "text": f"*Houve um erro no projeto: {INSTANCIA_EVOLUTION_API}*\nOcorreu um erro do tipo: {exc_type.__name__}\nNo arquivo: {arquivo}\nNa linha: {linha}\nMensagem: {e}"
                         }

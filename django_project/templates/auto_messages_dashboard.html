@@ -965,13 +965,18 @@ textarea.form-control {
 {% block content %}
 <div class="content-card">
     <div class="page-header">
-        <h1><i class="fas fa-calendar-alt"></i> Mensagens Automáticas</h1>
-        <div class="header-actions">
-            <a href="{% url 'auto_messages_new' %}" class="btn btn-primary">
-                <i class="fas fa-plus-circle"></i> Nova Mensagem
-            </a>
-        </div>
+    <h1><i class="fas fa-calendar-alt"></i> Mensagens Automáticas</h1>
+    <div class="header-actions">
+        <a href="{% url 'clear_contacts' %}" class="btn btn-outline" 
+           style="background: transparent; border: 2px solid #ff9800; color: #ff9800; display: none;"
+           title="Remover todos os contatos salvos">
+            <i class="fas fa-broom"></i> Limpar Contatos
+        </a>
+        <a href="{% url 'auto_messages_new' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Nova Mensagem
+        </a>
     </div>
+</div>
 
     <div class="tabs-container">
         <div class="tabs-header">
