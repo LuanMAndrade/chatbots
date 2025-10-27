@@ -1,7 +1,7 @@
 services:
   evolution-api:
     container_name: evolution_api
-    image: evoapicloud/evolution-api:v2.3.4
+    image: evoapicloud/evolution-api:latest
     restart: always
     ports:
       - 8081:8080

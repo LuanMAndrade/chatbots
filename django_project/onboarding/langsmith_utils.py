@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 dolar = 6
 
 # CONFIGURAÇÃO: Defina aqui a quantidade de tokens incluídos no plano
-TOKENS_INCLUIDOS_PLANO = 1000000
+TOKENS_INCLUIDOS_PLANO = 1
 
 def get_langsmith_client():
     """Initializes the LangSmith client."""

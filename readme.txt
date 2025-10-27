@@ -26,12 +26,12 @@ Mudar para novo projeto
 •	Mudar nome da pasta "bot_nome"
 •	Criar usuario no django
 •	Criar usuario evolution com o mesmo nome da pasta
-•	Configurar evolution
+•	Configurar evolution - http://31.97.92.54:8003/whatsapp
 •	Preencher portas no readme.txt
 •	Criar os services do bot e agendador no systemd
-•	Usar os comandos no terminal para ativar: sudo systemctl daemon-reload -> sudo systemctl enable {bot_model} -> sudo systemctl start {bot_model}
+•	Usar os comandos no terminal para ativar: sudo systemctl daemon-reload -> sudo systemctl enable bot_model -> sudo systemctl start bot_model
 •	Para o agendador tambem
-•	.env
+•	modificar dados do negocio no .env
 •	Testar agendador, uma mensagem e o consumo
 •	Pedir numero de backup
 •	Criar o cal.com
@@ -53,3 +53,6 @@ Portas:
 bot_sejasua = 8001
 bot_model = 8002
 bot_lorena = 8003
+bot_victoria = 8004
+
+v2.3.4
