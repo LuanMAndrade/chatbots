@@ -17,6 +17,7 @@ from pathlib import Path
 
 
 from graph.nao_entendi import nao_entendi
+from graph.agendador import agendamento_normal, agendamento_biopsia
 from graph.informacoes import informacoes
 from banco_dados.message_history import save_message, get_history
 from django_utils.update_info import fetch_bot_info
@@ -26,7 +27,7 @@ from django_utils.update_info import fetch_bot_info
 
 LINK_AGENDAMENTO = os.getenv("LINK_AGENDAMENTO")
 
-tools = [nao_entendi]
+tools = [nao_entendi, agendamento_normal, agendamento_biopsia]
 
 load_dotenv()
 
@@ -48,13 +49,13 @@ def roteador(state: AgentState, config: RunnableConfig):
 
         # Uso das ferramentas #
         Você tem acesso às ferramentas abaixo. Use-as quando necessário para responder a(o) cliente
+        Se o cliente pedir para falar com um humano, ou se você não entender a solicitação dela(e), use a ferramenta nao_entendi.
 
         <Ferramentas>
-        1. nao_entendi - Use quando não entender a solicitação da cliente. Só use como último recurso.
+        1. nao_entendi - Use quando não entender a solicitação da cliente.
+        2. agendamento_normal - Use para agendamentos normais.
+        3. agendamento_biopsia - Use para agendamentos de biópsia.
         </Ferramentas>
-
-        # Regras #
-        1. Para agendamento o cliente deve usar o seguinte link {LINK_AGENDAMENTO}
         """
     
     prompt_template = ChatPromptTemplate.from_messages([

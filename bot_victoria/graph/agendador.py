@@ -1,81 +1,54 @@
+from langchain_core.tools import tool
+from typing import Annotated
 import asyncio
 import os
 from dotenv import load_dotenv
 import httpx
-import sys        
-import traceback
-from datetime import datetime
-from zoneinfo import ZoneInfo
-
 
 load_dotenv()
 
-NUMERO_BACKUP = os.getenv('NUMERO_BACKUP')
+NUMERO_AGENDAMENTO = os.getenv('NUMERO_AGENDAMENTO')
+NUMERO_BIOPSIA = os.getenv('NUMERO_BIOPSIA')
 INSTANCIA_EVOLUTION_API = os.getenv("INSTANCIA_EVOLUTION_API")
 EVOLUTION_TEXT_URL_TEMPLATE = os.getenv("EVOLUTION_TEXT_URL")
 EVOLUTION_PORT = os.getenv("EVOLUTION_PORT")
 EVOLUTION_TEXT_URL = EVOLUTION_TEXT_URL_TEMPLATE.format(INSTANCIA=INSTANCIA_EVOLUTION_API, EVOLUTION_PORT=EVOLUTION_PORT)
 EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY")
-NUMERO_PARA_ERROS = os.getenv("NUMERO_PARA_ERROS")
 
-async def agendamento(data):
+async def chama_agendamento(nome):
+    async with httpx.AsyncClient() as client:
+        nome = nome.split('@')[0]
+        payload = {"number": NUMERO_AGENDAMENTO,
+                    "text": f"A cliente {nome} quer fazer um agendamento"}
+        headers = {
+                "Content-Type": "application/json",
+                "apikey": EVOLUTION_API_KEY
+                }
+        await client.post(EVOLUTION_TEXT_URL, json=payload, headers=headers)
 
-    try:
-        async with httpx.AsyncClient() as client:
-            payload = data.get('payload')
-            if payload:
-                attendees = payload.get('attendees')
-                onde = payload.get('eventTitle')
-                metadata = payload.get('metadata')
-                if metadata:
-                    link = metadata.get('videoCallUrl')
-                inicio = payload.get('startTime')
-                dt_utc = datetime.fromisoformat(inicio)
-                brasilia_tz = ZoneInfo("America/Sao_Paulo")
-                dt_brasilia = dt_utc.astimezone(brasilia_tz)
-                inicio = dt_brasilia.strftime('%d/%m/%Y %H:%M:%S')
-                fim = payload.get('endTime')
-                dt_utc = datetime.fromisoformat(fim)
-                brasilia_tz = ZoneInfo("America/Sao_Paulo")
-                dt_brasilia = dt_utc.astimezone(brasilia_tz)
-                fim = dt_brasilia.strftime('%d/%m/%Y %H:%M:%S')
-                if attendees:
-                    sender = attendees[0].get('phoneNumber')
-                    sender = f'{sender[1:]}@s.whatsapp.net'
-                    if data.get('triggerEvent') == 'BOOKING_CREATED':
-                        text = f"Verifiquei aqui que você agendou um(a) {onde} das {inicio} às {fim}."
-                    elif data.get('triggerEvent') == 'BOOKING_CANCELLED':
-                        text = f"Verifiquei aqui que você cancelou o(a) {onde} das {inicio} às {fim}"
-                    else:
-                        return True
-                    payload = {"number": sender,
-                                "text": text}
-                    headers = {
-                            "Content-Type": "application/json",
-                            "apikey": EVOLUTION_API_KEY
-                            }
-                    await client.post(EVOLUTION_TEXT_URL, json=payload, headers=headers)
-            return True
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        arquivo = exc_tb.tb_frame.f_code.co_filename
-        linha = exc_tb.tb_lineno
+async def chama_biopsia(nome):
+    async with httpx.AsyncClient() as client:
+        nome = nome.split('@')[0]
+        payload = {"number": NUMERO_BIOPSIA,
+                    "text": f"A cliente {nome} quer fazer uma biópsia"}
+        headers = {
+                "Content-Type": "application/json",
+                "apikey": EVOLUTION_API_KEY
+                }
+        await client.post(EVOLUTION_TEXT_URL, json=payload, headers=headers)
 
-        print("\n--- ERRO CAPTURADO ---", flush = True)
-        print(f"Ocorreu um erro do tipo: {exc_type.__name__}", flush = True)
-        print(f"No arquivo: {arquivo}", flush = True)
-        print(f"Na linha: {linha}", flush = True)
-        print(f"Mensagem: {e}", flush = True)
-        print("-----------------------------------------------", flush = True)
 
-        async with httpx.AsyncClient() as client:
-            headers = {
-                    "Content-Type": "application/json",
-                    "apikey": EVOLUTION_API_KEY
-                    }
-            payload = {
-                        "number": NUMERO_PARA_ERROS,
-                        "type": "text",
-                        "text": f"*Houve um erro no projeto: {INSTANCIA_EVOLUTION_API}*\nOcorreu um erro do tipo: {exc_type.__name__}\nNo arquivo: {arquivo}\nNa linha: {linha}\nMensagem: {e}"
-                        }
-            await client.post(EVOLUTION_TEXT_URL, json=payload, headers=headers, timeout=30)
+
+@tool
+def agendamento_normal(nome: Annotated[str, "Número de identificação do cliente"]):
+    """Faz um agendamento normal"""
+    asyncio.run(chama_agendamento(nome))
+
+    return "Informe para aguardar um momento enquanto transfere o atendimento para o setor de agendamentos. Fale somente isso, nada mais."
+
+@tool
+def agendamento_biopsia(nome: Annotated[str, "Número de identificação do cliente"]):
+    """Faz um agendamento de biópsia"""
+    asyncio.run(chama_biopsia(nome))
+
+    return "Informe para aguardar um momento enquanto transfere o atendimento para o setor de agendamentos. Fale somente isso, nada mais."

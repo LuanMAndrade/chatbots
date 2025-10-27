@@ -54,5 +54,3 @@ bot_sejasua = 8001
 bot_model = 8002
 bot_lorena = 8003
 bot_victoria = 8004
-
-v2.3.4
