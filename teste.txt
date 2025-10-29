@@ -1,0 +1,133 @@
+from onboarding.models import Plan, ClientSubscription, BotInstance, PortRegistry
+from django.contrib.auth.models import User
+from datetime import date
+
+# ==============================================
+# CONFIGURAÇÃO DOS SEUS CLIENTES
+# ==============================================
+
+
+# Lista com os dados de cada cliente
+clientes = [
+    {
+        'username': 'victoria',  # AJUSTAR
+        'plano_id': 1,  # 1=Básico, 2=Profissional, 3=Empresarial
+        'bot_folder': 'bot_victoria',  # AJUSTAR
+        'porta_uvicorn': 8004,  # AJUSTAR
+        'porta_evolution': 8081,  # AJUSTAR ou None
+        'billing_day': 18,  # AJUSTAR: dia da cobrança (1-28)
+        'data_inicio': date(2025, 1, 1),  # AJUSTAR: quando começou
+    },
+    {
+        'username': 'lorena',  # AJUSTAR
+        'plano_id': 1,  # Básico
+        'bot_folder': 'bot_lorena',  # AJUSTAR
+        'porta_uvicorn': 8003,  # AJUSTAR
+        'porta_evolution': 8081,  # AJUSTAR ou None
+        'billing_day': 18,
+        'data_inicio': date(2025, 1, 5),
+    },
+    {
+        'username': 'model',  # AJUSTAR
+        'plano_id': 3,  # Empresarial
+        'bot_folder': 'bot_model',  # AJUSTAR
+        'porta_uvicorn': 8002,  # AJUSTAR
+        'porta_evolution': 8081,  # Não usa Evolution
+        'billing_day': 18,
+        'data_inicio': date(2025, 1, 10),
+    },
+    # ADICIONE MAIS CLIENTES AQUI...
+]
+
+# ==============================================
+# EXECUTAR CRIAÇÃO
+# ==============================================
+
+print("=== CRIANDO SUBSCRIPTIONS PARA CLIENTES EXISTENTES ===\n")
+
+erros = []
+
+for dados in clientes:
+    try:
+        print(f"Processando: {dados['username']}...")
+        
+        # 1. Buscar usuário
+        try:
+            user = User.objects.get(username=dados['username'])
+        except User.DoesNotExist:
+            raise Exception(f"Usuário '{dados['username']}' não encontrado!")
+        
+        # 2. Verificar se já tem subscription
+        if hasattr(user, 'subscription'):
+            print(f"  ⚠️  {dados['username']} já tem subscription! Pulando...")
+            continue
+        
+        # 3. Buscar plano
+        plano = Plan.objects.get(id=dados['plano_id'])
+        
+        # 4. Criar subscription
+        subscription = ClientSubscription.objects.create(
+            user=user,
+            plano=plano,
+            tokens_incluidos_no_plano=plano.tokens_incluidos,
+            billing_day=dados['billing_day'],
+            data_inicio=dados['data_inicio'],
+            status='active'
+        )
+        print(f"  ✓ Subscription criada: {plano.nome}")
+        
+        # 5. Criar bot instance
+        bot = BotInstance.objects.create(
+            subscription=subscription,
+            bot_folder_name=dados['bot_folder'],
+            porta_uvicorn=dados['porta_uvicorn'],
+            porta_evolution=dados['porta_evolution'],
+            status='active',
+            systemd_service_name=f"{dados['bot_folder']}.service",
+            systemd_scheduler_name=f"{dados['bot_folder']}_agendador.service"
+        )
+        print(f"  ✓ Bot criado: {dados['bot_folder']} (porta {dados['porta_uvicorn']})")
+        
+        # 6. Registrar portas
+        PortRegistry.objects.create(
+            porta=dados['porta_uvicorn'],
+            tipo='uvicorn',
+            bot_instance=bot,
+            em_uso=True
+        )
+        print(f"  ✓ Porta {dados['porta_uvicorn']} registrada (uvicorn)")
+        
+        if dados['porta_evolution']:
+            PortRegistry.objects.create(
+                porta=dados['porta_evolution'],
+                tipo='evolution',
+                bot_instance=bot,
+                em_uso=True
+            )
+            print(f"  ✓ Porta {dados['porta_evolution']} registrada (evolution)")
+        
+        print(f"  ✅ {dados['username']} - COMPLETO!\n")
+        
+    except Exception as e:
+        erro = f"❌ ERRO em {dados['username']}: {str(e)}"
+        print(f"  {erro}\n")
+        erros.append(erro)
+
+print("=" * 60)
+print("\n📊 RESUMO:")
+print(f"Total de clientes processados: {len(clientes)}")
+print(f"Sucessos: {len(clientes) - len(erros)}")
+print(f"Erros: {len(erros)}")
+
+if erros:
+    print("\n⚠️  ERROS ENCONTRADOS:")
+    for erro in erros:
+        print(f"  {erro}")
+else:
+    print("\n✅ TODOS OS CLIENTES MIGRADOS COM SUCESSO!")
+
+# Verificar resultado
+print("\n=== VERIFICAÇÃO FINAL ===")
+print(f"Subscriptions criadas: {ClientSubscription.objects.count()}")
+print(f"Bots criados: {BotInstance.objects.count()}")
+print(f"Portas registradas: {PortRegistry.objects.count()}")

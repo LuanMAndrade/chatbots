@@ -1,0 +1,615 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - {{ plan.nome }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg {
+            background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen py-12 px-4">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Finalizar Assinatura</h1>
+                <p class="text-gray-600">Você está contratando o plano <strong>{{ plan.nome }}</strong></p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Formulário -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow-lg p-8">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-6">Seus Dados</h2>
+                        
+                        <form id="checkout-form" method="POST">
+                            {% csrf_token %}
+                            
+                            <!-- Dados Pessoais -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4">Informações Pessoais</h3>
+                                
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-semibold mb-2">
+                                        Nome Completo *
+                                    </label>
+                                    <input type="text" name="name" id="name" required
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                           placeholder="João da Silva">
+                                    <p id="name-feedback" class="text-sm mt-1"></p>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-semibold mb-2">
+                                        Nome de Usuário * 
+                                        <span class="text-xs text-gray-500">(será usado para login)</span>
+                                    </label>
+                                    <input type="text" name="username" id="username" required
+                                        pattern="[a-zA-Z0-9_]{3,30}"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                        placeholder="joaosilva">
+                                    <p id="username-feedback" class="text-sm mt-1"></p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        Apenas letras, números e underscore. Mínimo 3 caracteres.
+                                    </p>
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-semibold mb-2">
+                                            Senha *
+                                        </label>
+                                        <input type="password" name="password" id="password" required minlength="6"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                            placeholder="Mínimo 6 caracteres">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-semibold mb-2">
+                                            Confirmar Senha *
+                                        </label>
+                                        <input type="password" name="password_confirm" id="password_confirm" required minlength="6"
+                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                            placeholder="Repita a senha">
+                                        <p id="password-feedback" class="text-sm mt-1"></p>
+                                    </div>
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-semibold mb-2">
+                                            CPF/CNPJ *
+                                        </label>
+                                        <input type="text" name="cpfCnpj" id="cpfCnpj" required
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                               placeholder="000.000.000-00">
+                                        <p id="cpf-feedback" class="text-sm mt-1"></p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-semibold mb-2">
+                                            Telefone *
+                                        </label>
+                                        <input type="tel" name="phone" required
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                               placeholder="(11) 99999-9999">
+                                    </div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-semibold mb-2">
+                                        E-mail *
+                                    </label>
+                                    <input type="email" name="email" id="email" required
+                                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                           placeholder="joao@exemplo.com">
+                                    <p id="email-feedback" class="text-sm mt-1"></p>
+                                </div>
+                            </div>
+
+                            <!-- Endereço -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4">Endereço</h3>
+                                
+                                <div class="grid md:grid-cols-3 gap-4 mb-4">
+                                    <div class="md:col-span-1">
+                                        <label class="block text-gray-700 text-sm font-semibold mb-2">
+                                            CEP *
+                                        </label>
+                                        <input type="text" name="postalCode" required
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                               placeholder="00000-000">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-gray-700 text-sm font-semibold mb-2">
+                                            Endereço *
+                                        </label>
+                                        <input type="text" name="address" required
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                               placeholder="Rua Exemplo">
+                                    </div>
+                                </div>
+
+                                <div class="grid md:grid-cols-3 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-semibold mb-2">
+                                            Número *
+                                        </label>
+                                        <input type="text" name="addressNumber" required
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                               placeholder="123">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-gray-700 text-sm font-semibold mb-2">
+                                            Complemento
+                                        </label>
+                                        <input type="text" name="complement"
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                               placeholder="Apto 45">
+                                    </div>
+                                </div>
+
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-semibold mb-2">
+                                            Cidade *
+                                        </label>
+                                        <input type="text" name="city" required
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                               placeholder="São Paulo">
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-semibold mb-2">
+                                            Estado *
+                                        </label>
+                                        <input type="text" name="state" required maxlength="2"
+                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                                               placeholder="SP">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Forma de Pagamento -->
+                            <!-- <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4">Forma de Pagamento</h3>
+                                
+                                <div class="space-y-3">
+                                    <label class="flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-teal-500">
+                                        <input type="radio" name="billingType" value="CREDIT_CARD" class="mr-3" checked>
+                                        <span class="text-gray-700 font-medium">💳 Cartão de Crédito</span>
+                                    </label>
+                                    
+                                    <label class="flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-teal-500">
+                                        <input type="radio" name="billingType" value="BOLETO" class="mr-3">
+                                        <span class="text-gray-700 font-medium">🏦 Boleto Bancário</span>
+                                    </label>
+                                    
+                                    <label class="flex items-center p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-teal-500">
+                                        <input type="radio" name="billingType" value="PIX" class="mr-3">
+                                        <span class="text-gray-700 font-medium">📱 PIX</span>
+                                    </label>
+                                </div>
+                            </div> -->
+
+                            <!-- Termos -->
+                            <div class="mb-6">
+                                <label class="flex items-start">
+                                    <input type="checkbox" name="terms" required class="mt-1 mr-3">
+                                    <span class="text-sm text-gray-600">
+                                        Eu aceito os <a href="#" class="text-teal-600 hover:underline">termos de serviço</a> 
+                                        e <a href="#" class="text-teal-600 hover:underline">política de privacidade</a>
+                                    </span>
+                                </label>
+                            </div>
+
+                            <button type="submit" id="submit-btn"
+                                    class="w-full gradient-bg text-white font-bold py-4 px-8 rounded-lg text-lg shadow-lg hover:shadow-xl transition duration-300">
+                                Finalizar Assinatura
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Resumo do Pedido -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg shadow-lg p-6 sticky top-8">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Resumo do Pedido</h3>
+                        
+                        <div class="space-y-3 mb-4">
+                            <div class="flex justify-between text-gray-700">
+                                <span>Plano {{ plan.nome }}</span>
+                                <span class="font-semibold">R$ {{ plan.preco_mensal }}</span>
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                {{ plan.tokens_incluidos|floatformat:0 }} tokens/mês
+                            </div>
+                        </div>
+
+                        {% if selected_addons %}
+                        <div class="border-t pt-4 mb-4">
+                            <h4 class="font-semibold text-gray-700 mb-2">Módulos Extras:</h4>
+                            {% for addon in selected_addons %}
+                            <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                <span>{{ addon.nome }}</span>
+                                <span>+R$ {{ addon.preco_mensal }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <div class="border-t pt-4 mb-6">
+                            <div class="flex justify-between text-lg font-bold text-gray-800">
+                                <span>Total Mensal</span>
+                                <span class="text-teal-600">R$ {{ total_price }}</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-teal-50 border border-teal-200 rounded-lg p-4 text-sm text-teal-800">
+                            <p class="font-semibold mb-2">✓ O que está incluso:</p>
+                            <ul class="space-y-1">
+                                {% for feature in plan.funcionalidades.all %}
+                                <li>• {{ feature.nome_funcionalidade }}</li>
+                                {% endfor %}
+                                {% if selected_addons %}
+                                {% for addon in selected_addons %}
+                                <li>• {{ addon.nome }}</li>
+                                {% endfor %}
+                                {% endif %}
+                            </ul>
+                        </div>
+
+                        <div class="mt-4 text-xs text-gray-500 text-center">
+                            <p>Pagamento 100% seguro</p>
+                            <p class="mt-1">Processado por Asaas</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('checkout-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processando...';
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert('Erro: ' + (data.error || 'Erro ao processar pagamento'));
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Finalizar Assinatura';
+                }
+            } catch (error) {
+                alert('Erro ao processar pagamento. Tente novamente.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Finalizar Assinatura';
+            }
+        });
+
+        // Máscaras
+        document.querySelector('[name="cpfCnpj"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            } else {
+                value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+                value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                value = value.replace(/(\d{4})(\d)/, '$1-$2');
+            }
+            e.target.value = value;
+        });
+
+        document.querySelector('[name="phone"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/^(\d{2})(\d)/, '($1) $2');
+            value = value.replace(/(\d{5})(\d)/, '$1-$2');
+            e.target.value = value;
+        });
+
+        document.querySelector('[name="postalCode"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/^(\d{5})(\d)/, '$1-$2');
+            e.target.value = value;
+        });
+    </script>
+
+    <script>
+        // ==============================================
+        // VALIDAÇÃO DE USERNAME
+        // ==============================================
+        let usernameTimeout;
+        const usernameInput = document.getElementById('username');
+        const usernameFeedback = document.getElementById('username-feedback');
+        
+        usernameInput.addEventListener('input', function() {
+            clearTimeout(usernameTimeout);
+            let username = this.value.trim();
+            
+            // Remover caracteres não permitidos automaticamente
+            username = username.replace(/[^a-zA-Z0-9_]/g, '');
+            this.value = username;
+            
+            if (username.length < 3) {
+                usernameFeedback.textContent = '';
+                usernameFeedback.className = 'text-sm mt-1';
+                this.setCustomValidity('');
+                return;
+            }
+            
+            if (username.length > 30) {
+                usernameFeedback.textContent = '✗ Máximo 30 caracteres';
+                usernameFeedback.className = 'text-sm mt-1 text-red-600';
+                this.setCustomValidity('Username muito longo');
+                return;
+            }
+            
+            usernameFeedback.textContent = 'Verificando...';
+            usernameFeedback.className = 'text-sm mt-1 text-gray-500';
+            
+            usernameTimeout = setTimeout(() => {
+                fetch(`/check-username/?username=${encodeURIComponent(username)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available) {
+                            usernameFeedback.textContent = '✓ Nome de usuário disponível';
+                            usernameFeedback.className = 'text-sm mt-1 text-green-600';
+                            usernameInput.setCustomValidity('');
+                        } else {
+                            usernameFeedback.textContent = '✗ ' + data.message;
+                            usernameFeedback.className = 'text-sm mt-1 text-red-600';
+                            usernameInput.setCustomValidity(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao verificar username:', error);
+                    });
+            }, 500);
+        });
+        
+        // ==============================================
+        // VALIDAÇÃO DE EMAIL
+        // ==============================================
+        let emailTimeout;
+        const emailInput = document.getElementById('email');
+        const emailFeedback = document.getElementById('email-feedback');
+        
+        emailInput.addEventListener('input', function() {
+            clearTimeout(emailTimeout);
+            const email = this.value.trim();
+            
+            if (!email || !email.includes('@')) {
+                emailFeedback.textContent = '';
+                emailFeedback.className = 'text-sm mt-1';
+                return;
+            }
+            
+            emailFeedback.textContent = 'Verificando...';
+            emailFeedback.className = 'text-sm mt-1 text-gray-500';
+            
+            emailTimeout = setTimeout(() => {
+                fetch(`/check-email/?email=${encodeURIComponent(email)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available) {
+                            emailFeedback.textContent = '✓ Email disponível';
+                            emailFeedback.className = 'text-sm mt-1 text-green-600';
+                            emailInput.setCustomValidity('');
+                        } else {
+                            emailFeedback.textContent = '✗ Email já cadastrado';
+                            emailFeedback.className = 'text-sm mt-1 text-red-600';
+                            emailInput.setCustomValidity('Email já cadastrado');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao verificar email:', error);
+                    });
+            }, 500);
+        });
+        
+        // ==============================================
+        // VALIDAÇÃO DE CPF/CNPJ
+        // ==============================================
+        let cpfTimeout;
+        const cpfInput = document.getElementById('cpfCnpj');
+        const cpfFeedback = document.getElementById('cpf-feedback');
+        
+        cpfInput.addEventListener('input', function(e) {
+            // Aplicar máscara
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 11) {
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            } else {
+                value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+                value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                value = value.replace(/(\d{4})(\d)/, '$1-$2');
+            }
+            e.target.value = value;
+            
+            // Verificar duplicidade
+            clearTimeout(cpfTimeout);
+            const cpfClean = value.replace(/\D/g, '');
+            
+            if (cpfClean.length < 11) {
+                cpfFeedback.textContent = '';
+                cpfFeedback.className = 'text-sm mt-1';
+                return;
+            }
+            
+            cpfFeedback.textContent = 'Verificando...';
+            cpfFeedback.className = 'text-sm mt-1 text-gray-500';
+            
+            cpfTimeout = setTimeout(() => {
+                fetch(`/check-cpf/?cpf=${encodeURIComponent(cpfClean)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available) {
+                            cpfFeedback.textContent = '✓ CPF/CNPJ disponível';
+                            cpfFeedback.className = 'text-sm mt-1 text-green-600';
+                            cpfInput.setCustomValidity('');
+                        } else {
+                            cpfFeedback.textContent = '✗ CPF/CNPJ já cadastrado';
+                            cpfFeedback.className = 'text-sm mt-1 text-red-600';
+                            cpfInput.setCustomValidity('CPF/CNPJ já cadastrado');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao verificar CPF:', error);
+                    });
+            }, 500);
+        });
+        
+        // ==============================================
+        // VALIDAÇÃO DE NOME COMPLETO
+        // ==============================================
+        let nameTimeout;
+        const nameInput = document.getElementById('name');
+        const nameFeedback = document.getElementById('name-feedback');
+        
+        nameInput.addEventListener('input', function() {
+            clearTimeout(nameTimeout);
+            const name = this.value.trim();
+            
+            if (name.length < 3) {
+                nameFeedback.textContent = '';
+                nameFeedback.className = 'text-sm mt-1';
+                return;
+            }
+            
+            nameFeedback.textContent = 'Verificando...';
+            nameFeedback.className = 'text-sm mt-1 text-gray-500';
+            
+            nameTimeout = setTimeout(() => {
+                fetch(`/check-name/?name=${encodeURIComponent(name)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.available) {
+                            nameFeedback.textContent = '✓ Nome disponível';
+                            nameFeedback.className = 'text-sm mt-1 text-green-600';
+                            nameInput.setCustomValidity('');
+                        } else {
+                            nameFeedback.textContent = '✗ Nome já cadastrado';
+                            nameFeedback.className = 'text-sm mt-1 text-red-600';
+                            nameInput.setCustomValidity('Nome já cadastrado');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao verificar nome:', error);
+                    });
+            }, 500);
+        });
+        
+        // ==============================================
+        // VALIDAÇÃO DE SENHA
+        // ==============================================
+        const passwordInput = document.getElementById('password');
+        const passwordConfirmInput = document.getElementById('password_confirm');
+        const passwordFeedback = document.getElementById('password-feedback');
+        
+        function validatePassword() {
+            if (passwordConfirmInput.value === '') {
+                passwordFeedback.textContent = '';
+                passwordFeedback.className = 'text-sm mt-1';
+                passwordConfirmInput.setCustomValidity('');
+                return;
+            }
+            
+            if (passwordInput.value === passwordConfirmInput.value) {
+                passwordFeedback.textContent = '✓ Senhas conferem';
+                passwordFeedback.className = 'text-sm mt-1 text-green-600';
+                passwordConfirmInput.setCustomValidity('');
+            } else {
+                passwordFeedback.textContent = '✗ Senhas não conferem';
+                passwordFeedback.className = 'text-sm mt-1 text-red-600';
+                passwordConfirmInput.setCustomValidity('Senhas não conferem');
+            }
+        }
+        
+        passwordInput.addEventListener('input', validatePassword);
+        passwordConfirmInput.addEventListener('input', validatePassword);
+
+        // ==============================================
+        // SUBMIT DO FORMULÁRIO
+        // ==============================================
+        document.getElementById('checkout-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validar senhas
+            if (passwordInput.value !== passwordConfirmInput.value) {
+                alert('As senhas não conferem!');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processando...';
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert('Erro: ' + (data.error || 'Erro ao processar pagamento'));
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Finalizar Assinatura';
+                }
+            } catch (error) {
+                alert('Erro ao processar pagamento. Tente novamente.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Finalizar Assinatura';
+            }
+        });
+
+        // ==============================================
+        // MÁSCARA DE TELEFONE
+        // ==============================================
+        document.querySelector('[name="phone"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/^(\d{2})(\d)/, '($1) $2');
+            value = value.replace(/(\d{5})(\d)/, '$1-$2');
+            e.target.value = value;
+        });
+
+        // ==============================================
+        // MÁSCARA DE CEP
+        // ==============================================
+        document.querySelector('[name="postalCode"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            value = value.replace(/^(\d{5})(\d)/, '$1-$2');
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

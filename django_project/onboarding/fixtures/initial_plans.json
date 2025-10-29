@@ -1,0 +1,274 @@
+[
+  {
+    "model": "onboarding.plan",
+    "pk": 1,
+    "fields": {
+      "nome": "Básico",
+      "slug": "basico",
+      "descricao": "Plano ideal para quem está começando com seu chatbot",
+      "preco_mensal": "49.90",
+      "tokens_incluidos": 1000000,
+      "ativo": true,
+      "ordem_exibicao": 1,
+      "destaque": false,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "onboarding.plan",
+    "pk": 2,
+    "fields": {
+      "nome": "Profissional",
+      "slug": "profissional",
+      "descricao": "Para profissionais que precisam de mais recursos",
+      "preco_mensal": "99.90",
+      "tokens_incluidos": 3000000,
+      "ativo": true,
+      "ordem_exibicao": 2,
+      "destaque": true,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "onboarding.plan",
+    "pk": 3,
+    "fields": {
+      "nome": "Empresarial",
+      "slug": "empresarial",
+      "descricao": "Solução completa para empresas",
+      "preco_mensal": "199.90",
+      "tokens_incluidos": 10000000,
+      "ativo": true,
+      "ordem_exibicao": 3,
+      "destaque": false,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "onboarding.planfeature",
+    "pk": 1,
+    "fields": {
+      "plano": 1,
+      "nome_funcionalidade": "1M tokens/mês",
+      "descricao": "1 milhão de tokens inclusos mensalmente",
+      "icone": "fa-check",
+      "ordem": 1,
+      "ativo": true
+    }
+  },
+  {
+    "model": "onboarding.planfeature",
+    "pk": 2,
+    "fields": {
+      "plano": 1,
+      "nome_funcionalidade": "1 Instância de Bot",
+      "descricao": "Uma instância ativa do chatbot",
+      "icone": "fa-robot",
+      "ordem": 2,
+      "ativo": true
+    }
+  },
+  {
+    "model": "onboarding.planfeature",
+    "pk": 3,
+    "fields": {
+      "plano": 1,
+      "nome_funcionalidade": "Suporte por Email",
+      "descricao": "Atendimento via email em até 48h",
+      "icone": "fa-envelope",
+      "ordem": 3,
+      "ativo": true
+    }
+  },
+  {
+    "model": "onboarding.planfeature",
+    "pk": 4,
+    "fields": {
+      "plano": 2,
+      "nome_funcionalidade": "3M tokens/mês",
+      "descricao": "3 milhões de tokens inclusos mensalmente",
+      "icone": "fa-check",
+      "ordem": 1,
+      "ativo": true
+    }
+  },
+  {
+    "model": "onboarding.planfeature",
+    "pk": 5,
+    "fields": {
+      "plano": 2,
+      "nome_funcionalidade": "1 Instância de Bot",
+      "descricao": "Uma instância ativa do chatbot",
+      "icone": "fa-robot",
+      "ordem": 2,
+      "ativo": true
+    }
+  },
+  {
+    "model": "onboarding.planfeature",
+    "pk": 6,
+    "fields": {
+      "plano": 2,
+      "nome_funcionalidade": "Suporte Prioritário",
+      "descricao": "Atendimento via WhatsApp em até 24h",
+      "icone": "fa-whatsapp",
+      "ordem": 3,
+      "ativo": true
+    }
+  },
+  {
+    "model": "onboarding.planfeature",
+    "pk": 7,
+    "fields": {
+      "plano": 2,
+      "nome_funcionalidade": "Analytics Avançado",
+      "descricao": "Relatórios detalhados de uso",
+      "icone": "fa-chart-line",
+      "ordem": 4,
+      "ativo": true
+    }
+  },
+  {
+    "model": "onboarding.planfeature",
+    "pk": 8,
+    "fields": {
+      "plano": 3,
+      "nome_funcionalidade": "10M tokens/mês",
+      "descricao": "10 milhões de tokens inclusos mensalmente",
+      "icone": "fa-check",
+      "ordem": 1,
+      "ativo": true
+    }
+  },
+  {
+    "model": "onboarding.planfeature",
+    "pk": 9,
+    "fields": {
+      "plano": 3,
+      "nome_funcionalidade": "Instâncias Ilimitadas",
+      "descricao": "Crie quantos bots precisar",
+      "icone": "fa-infinity",
+      "ordem": 2,
+      "ativo": true
+    }
+  },
+  {
+    "model": "onboarding.planfeature",
+    "pk": 10,
+    "fields": {
+      "plano": 3,
+      "nome_funcionalidade": "Suporte Premium 24/7",
+      "descricao": "Atendimento prioritário a qualquer hora",
+      "icone": "fa-headset",
+      "ordem": 3,
+      "ativo": true
+    }
+  },
+  {
+    "model": "onboarding.planfeature",
+    "pk": 11,
+    "fields": {
+      "plano": 3,
+      "nome_funcionalidade": "Customização Avançada",
+      "descricao": "Personalize completamente seu bot",
+      "icone": "fa-cog",
+      "ordem": 4,
+      "ativo": true
+    }
+  },
+  {
+    "model": "onboarding.planfeature",
+    "pk": 12,
+    "fields": {
+      "plano": 3,
+      "nome_funcionalidade": "API de Integração",
+      "descricao": "Integre com seus sistemas",
+      "icone": "fa-plug",
+      "ordem": 5,
+      "ativo": true
+    }
+  },
+  {
+    "model": "onboarding.additionalfeature",
+    "pk": 1,
+    "fields": {
+      "nome": "Agendamento de Mensagens",
+      "slug": "agendamento-mensagens",
+      "descricao": "Agende mensagens para serem enviadas automaticamente em datas e horários específicos",
+      "descricao_curta": "Envie mensagens programadas",
+      "preco_mensal": "19.90",
+      "icone": "fa-calendar-alt",
+      "ativo": true,
+      "ordem": 1,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "onboarding.additionalfeature",
+    "pk": 2,
+    "fields": {
+      "nome": "Integração com CRM",
+      "slug": "integracao-crm",
+      "descricao": "Conecte seu chatbot com sistemas de CRM populares (Salesforce, HubSpot, RD Station)",
+      "descricao_curta": "Sincronize com seu CRM",
+      "preco_mensal": "39.90",
+      "icone": "fa-sync",
+      "ativo": true,
+      "ordem": 2,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "onboarding.additionalfeature",
+    "pk": 3,
+    "fields": {
+      "nome": "Tokens Extras (5M)",
+      "slug": "tokens-extras-5m",
+      "descricao": "Adicione 5 milhões de tokens extras ao seu plano mensal",
+      "descricao_curta": "+5M tokens mensais",
+      "preco_mensal": "49.90",
+      "icone": "fa-plus-circle",
+      "ativo": true,
+      "ordem": 3,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "onboarding.additionalfeature",
+    "pk": 4,
+    "fields": {
+      "nome": "White Label",
+      "slug": "white-label",
+      "descricao": "Remova a marca ChatbotsImas e personalize com sua própria identidade visual",
+      "descricao_curta": "Marca própria",
+      "preco_mensal": "99.90",
+      "icone": "fa-palette",
+      "ativo": true,
+      "ordem": 4,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "onboarding.additionalfeature",
+    "pk": 5,
+    "fields": {
+      "nome": "Backup Diário",
+      "slug": "backup-diario",
+      "descricao": "Backup automático diário de todas as conversas e configurações",
+      "descricao_curta": "Backups automáticos",
+      "preco_mensal": "29.90",
+      "icone": "fa-database",
+      "ativo": true,
+      "ordem": 5,
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  }
+]

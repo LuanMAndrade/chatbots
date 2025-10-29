@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aguardando Pagamento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center px-4 py-12">
+        <div class="max-w-2xl w-full bg-white rounded-lg shadow-2xl p-8 md:p-12 text-center">
+            <!-- Ícone -->
+            <div class="text-8xl mb-6">⏳</div>
+            
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+                Aguardando Confirmação do Pagamento
+            </h1>
+            
+            <p class="text-lg text-gray-600 mb-8">
+                Sua assinatura foi criada com sucesso!<br>
+                Estamos aguardando a confirmação do pagamento para ativar seu chatbot.
+            </p>
+            
+            {% if invoice and invoice.payment_url %}
+            <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-8">
+                <h2 class="text-xl font-bold text-blue-800 mb-3">
+                    📄 Dados do Pagamento
+                </h2>
+                <p class="text-gray-700 mb-4">
+                    Clique no botão abaixo para acessar o boleto ou QR Code PIX:
+                </p>
+                <a href="{{ invoice.payment_url }}" target="_blank"
+                   class="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition duration-300">
+                    Ver Dados do Pagamento
+                </a>
+            </div>
+            {% endif %}
+            
+            <div class="bg-teal-50 border-2 border-teal-200 rounded-lg p-6 mb-8">
+                <h2 class="text-xl font-bold text-teal-800 mb-3">O que acontece agora?</h2>
+                <div class="text-left space-y-3">
+                    <div class="flex items-start">
+                        <span class="text-teal-600 mr-3 text-xl">1.</span>
+                        <p class="text-gray-700">Realize o pagamento através do boleto ou PIX</p>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-teal-600 mr-3 text-xl">2.</span>
+                        <p class="text-gray-700">Aguarde a confirmação (pode levar alguns minutos)</p>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-teal-600 mr-3 text-xl">3.</span>
+                        <p class="text-gray-700">Você receberá um email com as instruções de acesso</p>
+                    </div>
+                    <div class="flex items-start">
+                        <span class="text-teal-600 mr-3 text-xl">4.</span>
+                        <p class="text-gray-700">Seu bot será criado automaticamente</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-100 rounded-lg p-6 mb-8">
+                <h3 class="font-bold text-gray-800 mb-2">Detalhes da assinatura:</h3>
+                <div class="space-y-2 text-sm text-gray-600">
+                    <p><strong>Plano:</strong> {{ subscription.plano.nome }}</p>
+                    <p><strong>Valor:</strong> R$ {{ subscription.get_valor_total_mensal }}/mês</p>
+                    <p><strong>Status:</strong> Aguardando pagamento</p>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <button onclick="window.location.reload()" 
+                        class="block w-full bg-teal-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-teal-700 transition duration-300">
+                    Atualizar Status
+                </button>
+                
+                <a href="/planos/" 
+                   class="block w-full bg-gray-200 text-gray-700 font-semibold py-3 px-8 rounded-lg hover:bg-gray-300 transition duration-300">
+                    Voltar ao Início
+                </a>
+            </div>
+            
+            <p class="text-xs text-gray-500 mt-8">
+                Dúvidas? Entre em contato com nosso suporte
+            </p>
+        </div>
+    </div>
+</body>
+</html>

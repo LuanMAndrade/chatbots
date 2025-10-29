@@ -1,0 +1,438 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatbotsImas - Chatbot Inteligente para WhatsApp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px;
+            max-height: 300px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 300px;
+                max-height: 350px;
+            }
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #14b8a6, #0d9488);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .cta-button {
+            transition: all 0.3s ease;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.2), 0 4px 6px -2px rgba(13, 148, 136, 0.1);
+        }
+        .plan-card, .addon-card {
+            transition: all 0.3s ease;
+        }
+        .plan-card.selected, .addon-card.selected {
+            border-color: #14b8a6;
+            box-shadow: 0 0 0 2px #14b8a6;
+        }
+    </style>
+</head>
+<body class="text-slate-700">
+    <main class="w-full">
+        <!-- Hero Section -->
+        <section class="text-center py-16 md:py-24 px-4 bg-white">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-4xl md:text-6xl font-bold text-slate-800 mb-4">
+                    Revolucione seu Atendimento no <span class="gradient-text">WhatsApp</span>
+                </h1>
+                <p class="text-lg md:text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
+                    Nosso chatbot com Inteligência Artificial assume o atendimento, qualifica clientes e impulsiona suas vendas 24/7, de forma automática e humanizada.
+                </p>
+                <a href="#planos" class="cta-button inline-block bg-teal-600 text-white font-bold py-3 px-8 rounded-lg text-lg shadow-lg">
+                    Conheça os Planos
+                </a>
+            </div>
+        </section>
+
+        <!-- How it Works -->
+        <section class="py-16 md:py-20 px-4">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold text-center text-slate-800 mb-12">Simples como usar o WhatsApp Web</h2>
+                <div class="grid md:grid-cols-3 gap-8 text-center">
+                    <div class="bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                        <div class="text-4xl mb-4 text-teal-600">1.</div>
+                        <h3 class="text-xl font-semibold text-slate-800 mb-2">Leia o QR Code</h3>
+                        <p class="text-slate-600">Receba um QR Code em nossa plataforma e escaneie com a função "Aparelhos Conectados" do seu WhatsApp.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                        <div class="text-4xl mb-4 text-teal-600">2.</div>
+                        <h3 class="text-xl font-semibold text-slate-800 mb-2">Pronto!</h3>
+                        <p class="text-slate-600">Instantaneamente, seu chatbot estará ativo e respondendo seus clientes com inteligência.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                        <div class="text-4xl mb-4 text-teal-600">3.</div>
+                        <h3 class="text-xl font-semibold text-slate-800 mb-2">Pause Quando Quiser</h3>
+                        <p class="text-slate-600">Desative e reative o serviço a qualquer momento, com total controle, da mesma forma que o WhatsApp Web.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Demo CTA -->
+        <section class="py-16 px-4 bg-teal-50">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-3xl font-bold text-teal-800 mb-4">Quer ver como funciona na prática?</h2>
+                <p class="text-lg text-teal-700 mb-8">Clique no botão abaixo e converse agora mesmo com um chatbot de demonstração no WhatsApp.</p>
+                <a href="https://wa.me/5511999999999?text=Ol%C3%A1!%20Gostaria%20de%20ver%20uma%20demonstra%C3%A7%C3%A3o%20do%20chatbot." target="_blank" class="cta-button inline-flex items-center gap-3 bg-green-500 text-white font-bold py-4 px-8 rounded-lg text-lg shadow-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-1.141.164-.66.164-1.22.114-1.32-.05-.099-.182-.15-.38-.25z"/>
+                    </svg>
+                    <span>Testar demonstração</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- Core Features -->
+        <section class="py-16 md:py-20 px-4 bg-white">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-center text-slate-800 mb-12">Funcionalidades Essenciais Inclusas em Todos os Planos</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="p-6 rounded-lg flex items-start space-x-4">
+                        <span class="text-2xl text-teal-500 mt-1">🗣️</span>
+                        <div>
+                            <h3 class="font-semibold text-slate-800">Atendimento Humanizado</h3>
+                            <p class="text-slate-600 text-sm">Conversas fluídas e naturais que encantam e resolvem.</p>
+                        </div>
+                    </div>
+                    <div class="p-6 rounded-lg flex items-start space-x-4">
+                        <span class="text-2xl text-teal-500 mt-1">💬</span>
+                        <div>
+                            <h3 class="font-semibold text-slate-800">Aparece o "Digitando"</h3>
+                            <p class="text-slate-600 text-sm">Cria uma experiência mais real e interativa para o cliente.</p>
+                        </div>
+                    </div>
+                    <div class="p-6 rounded-lg flex items-start space-x-4">
+                        <span class="text-2xl text-teal-500 mt-1">⏸️</span>
+                        <div>
+                            <h3 class="font-semibold text-slate-800">Pausa Inteligente</h3>
+                            <p class="text-slate-600 text-sm">O bot para quando um atendente humano assume a conversa.</p>
+                        </div>
+                    </div>
+                    <div class="p-6 rounded-lg flex items-start space-x-4">
+                        <span class="text-2xl text-teal-500 mt-1">🖼️</span>
+                        <div>
+                            <h3 class="font-semibold text-slate-800">Envio de Mídia</h3>
+                            <p class="text-slate-600 text-sm">Envia imagens e catálogos para apresentar seus produtos.</p>
+                        </div>
+                    </div>
+                    <div class="p-6 rounded-lg flex items-start space-x-4">
+                        <span class="text-2xl text-teal-500 mt-1">🎧</span>
+                        <div>
+                            <h3 class="font-semibold text-slate-800">Compreensão de Áudio</h3>
+                            <p class="text-slate-600 text-sm">Ouve e interpreta as mensagens de áudio enviadas pelos clientes.</p>
+                        </div>
+                    </div>
+                    <div class="p-6 rounded-lg flex items-start space-x-4">
+                        <span class="text-2xl text-teal-500 mt-1">💡</span>
+                        <div>
+                            <h3 class="font-semibold text-slate-800">Técnicas de Vendas</h3>
+                            <p class="text-slate-600 text-sm">Guia o cliente na jornada de compra de forma estratégica.</p>
+                        </div>
+                    </div>
+                    <div class="p-6 rounded-lg flex items-start space-x-4">
+                        <span class="text-2xl text-teal-500 mt-1">🆘</span>
+                        <div>
+                            <h3 class="font-semibold text-slate-800">Canal Direto com Você</h3>
+                            <p class="text-slate-600 text-sm">Notifica seu WhatsApp pessoal quando não souber a resposta.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recommended For -->
+        <section class="py-16 md:py-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-center text-slate-800 mb-2">Testado e Aprovado para Diversos Negócios</h2>
+                <p class="text-center text-slate-600 mb-12">Nosso chatbot é flexível e se adapta a múltiplos ramos de atividade.</p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 text-center">
+                    <div class="flex flex-col items-center">
+                        <div class="text-4xl mb-2">🥗</div>
+                        <h4 class="font-semibold text-slate-700">Nutricionistas</h4>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="text-4xl mb-2">🧑‍⚕️</div>
+                        <h4 class="font-semibold text-slate-700">Médicos</h4>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="text-4xl mb-2">⚖️</div>
+                        <h4 class="font-semibold text-slate-700">Advogados</h4>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="text-4xl mb-2">🏢</div>
+                        <h4 class="font-semibold text-slate-700">Imobiliárias</h4>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="text-4xl mb-2">💪</div>
+                        <h4 class="font-semibold text-slate-700">Academias</h4>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="text-4xl mb-2">🛍️</div>
+                        <h4 class="font-semibold text-slate-700">Lojas Virtuais</h4>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="text-4xl mb-2">🍽️</div>
+                        <h4 class="font-semibold text-slate-700">Restaurantes</h4>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="text-4xl mb-2">💇‍♀️</div>
+                        <h4 class="font-semibold text-slate-700">Salões</h4>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="text-4xl mb-2">🦷</div>
+                        <h4 class="font-semibold text-slate-700">Dentistas</h4>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="text-4xl mb-2">➕</div>
+                        <h4 class="font-semibold text-slate-700">E muito mais!</h4>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Plans and Calculator -->
+        <section id="planos" class="py-16 md:py-20 px-4 bg-white">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-center text-slate-800 mb-4">Planos e Investimento Flexíveis</h2>
+                <p class="text-center text-slate-600 mb-12">Monte o pacote ideal para as necessidades do seu negócio.</p>
+
+                <div class="grid lg:grid-cols-2 gap-12 items-start">
+                    <!-- Calculator Controls -->
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-xl font-semibold text-slate-800 mb-4">1. Escolha seu Plano Base</h3>
+                            <div class="grid sm:grid-cols-3 gap-4" id="plan-options">
+                                {% for plan in plans %}
+                                <label for="plan-{{ plan.id }}" class="plan-card cursor-pointer p-4 border-2 border-slate-200 rounded-lg text-center" data-plan="{{ plan.slug }}">
+                                    <input type="radio" name="base_plan" id="plan-{{ plan.id }}" value="{{ plan.id }}" data-price="{{ plan.preco_mensal }}" data-tokens="{{ plan.tokens_incluidos }}" class="hidden" {% if plan.destaque %}checked{% endif %}>
+                                    <span class="font-bold text-slate-800 block">{{ plan.nome }}</span>
+                                    <span class="text-slate-600 text-sm block">{{ plan.tokens_incluidos|floatformat:0 }} tokens</span>
+                                    <span class="text-teal-600 font-semibold block mt-1">R$ {{ plan.preco_mensal }}/mês</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% if additional_features %}
+                        <div>
+                            <h3 class="text-xl font-semibold text-slate-800 mb-4">2. Turbine com Módulos Adicionais</h3>
+                            <div class="space-y-3" id="addon-options">
+                                {% for addon in additional_features %}
+                                <label class="addon-card flex items-center justify-between p-4 border-2 border-slate-200 rounded-lg cursor-pointer">
+                                    <div>
+                                        <span class="font-semibold text-slate-800">{{ addon.icone }} {{ addon.nome }}</span>
+                                        <p class="text-sm text-slate-500">{{ addon.descricao_curta }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="font-semibold text-teal-600">+ R$ {{ addon.preco_mensal }}</span>
+                                        <input type="checkbox" data-price="{{ addon.preco_mensal }}" data-id="{{ addon.id }}" class="addon-checkbox ml-4 h-5 w-5 rounded border-gray-300 text-teal-600 focus:ring-teal-500">
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Calculator Display -->
+                    <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200 sticky top-8">
+                        <h3 class="text-xl font-semibold text-slate-800 mb-4 text-center">Seu Pacote Personalizado</h3>
+                        <div class="text-center mb-6">
+                            <p class="text-slate-600">Total Mensal</p>
+                            <p class="text-5xl font-bold text-teal-600" id="total-price">R$ 0</p>
+                            <p class="font-semibold text-slate-700 mt-2" id="total-tokens">0 tokens inclusos</p>
+                        </div>
+
+                        <div class="chart-container mb-4">
+                            <canvas id="tokenChart"></canvas>
+                        </div>
+                        
+                        <div class="text-center text-sm text-slate-500 bg-slate-100 p-3 rounded-md mb-6">
+                            <p><strong class="text-slate-700">Seu atendimento nunca para!</strong> Ao atingir o limite, será cobrado <strong class="text-slate-700">R$ 25,00</strong> por milhão excedente.</p>
+                        </div>
+                        
+                        <button onclick="goToCheckout()" id="checkout-btn" class="cta-button w-full block text-center bg-teal-600 text-white font-bold py-3 px-8 rounded-lg text-lg shadow-lg hover:bg-teal-700">
+                           Contratar Agora
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <footer class="bg-slate-800 text-white text-center py-16 px-4">
+            <h2 class="text-3xl font-bold mb-4">Vamos automatizar seu sucesso?</h2>
+            <p class="text-slate-300 mb-8 max-w-2xl mx-auto">Entre em contato e coloque a inteligência artificial para trabalhar a seu favor hoje mesmo!</p>
+            <a href="#planos" class="cta-button inline-block bg-teal-500 text-white font-bold py-3 px-8 rounded-lg text-lg shadow-lg">
+                Ver Planos
+            </a>
+        </footer>
+    </main>
+
+    <script>
+        let selectedPlanId = null;
+        let selectedAddons = [];
+        let planData = {};
+        let chart;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Preparar dados dos planos
+            {% for plan in plans %}
+            planData['{{ plan.slug }}'] = {
+                id: {{ plan.id }},
+                price: parseFloat('{{ plan.preco_mensal }}'),
+                tokens: parseFloat('{{ plan.tokens_incluidos }}'),
+                name: '{{ plan.nome }}'
+            };
+            {% endfor %}
+
+            const planOptions = document.getElementById('plan-options');
+            const addonOptions = document.getElementById('addon-options');
+            
+            // Atualizar calculadora quando mudar
+            if (planOptions) {
+                planOptions.addEventListener('change', updateCalculator);
+            }
+            if (addonOptions) {
+                addonOptions.addEventListener('change', updateCalculator);
+            }
+
+            // Inicializar
+            updateCalculator();
+        });
+
+        function updateCalculator() {
+            // Pegar plano selecionado
+            const selectedPlanInput = document.querySelector('input[name="base_plan"]:checked');
+            if (!selectedPlanInput) return;
+
+            selectedPlanId = selectedPlanInput.value;
+            const planPrice = parseFloat(selectedPlanInput.dataset.price);
+            const planTokens = parseFloat(selectedPlanInput.dataset.tokens);
+            
+            // Calcular addons
+            selectedAddons = [];
+            let addonsTotal = 0;
+            document.querySelectorAll('.addon-checkbox:checked').forEach(checkbox => {
+                const addonPrice = parseFloat(checkbox.dataset.price);
+                const addonId = checkbox.dataset.id;
+                addonsTotal += addonPrice;
+                selectedAddons.push(addonId);
+            });
+
+            // Atualizar display
+            const totalPrice = planPrice + addonsTotal;
+            document.getElementById('total-price').textContent = `R$ ${totalPrice.toFixed(2)}`;
+            document.getElementById('total-tokens').textContent = `${planTokens.toLocaleString('pt-BR')} tokens inclusos`;
+
+            // Atualizar cards selecionados
+            document.querySelectorAll('.plan-card').forEach(card => {
+                const input = card.querySelector('input[type="radio"]');
+                card.classList.toggle('selected', input && input.checked);
+            });
+
+            document.querySelectorAll('.addon-card').forEach(card => {
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                card.classList.toggle('selected', checkbox && checkbox.checked);
+            });
+
+            // Atualizar gráfico
+            updateChart(selectedPlanInput.dataset.plan);
+        }
+
+        function updateChart(selectedPlanSlug) {
+            const ctx = document.getElementById('tokenChart');
+            if (!ctx) return;
+
+            const planKeys = Object.keys(planData);
+            const labels = planKeys.map(key => planData[key].name);
+            const data = planKeys.map(key => planData[key].tokens / 1000000); // em milhões
+
+            const backgroundColors = planKeys.map(key => 
+                key === selectedPlanSlug ? '#14b8a6' : '#cbd5e1'
+            );
+            const borderColors = planKeys.map(key => 
+                key === selectedPlanSlug ? '#0d9488' : '#94a3b8'
+            );
+
+            if (chart) {
+                chart.data.datasets[0].backgroundColor = backgroundColors;
+                chart.data.datasets[0].borderColor = borderColors;
+                chart.update();
+            } else {
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Milhões de Tokens',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 1,
+                            borderRadius: 5,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => `${context.raw}M tokens`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { display: false },
+                                ticks: {
+                                    callback: (value) => value + 'M'
+                                }
+                            },
+                            x: {
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function goToCheckout() {
+            if (!selectedPlanId) {
+                alert('Selecione um plano');
+                return;
+            }
+            
+            // Passar plano e addons via URL
+            const addonsParam = selectedAddons.length > 0 ? '&addons=' + selectedAddons.join(',') : '';
+            window.location.href = `/checkout/${selectedPlanId}/${addonsParam ? '?' + addonsParam : ''}`;
+        }
+    </script>
+</body>
+</html>

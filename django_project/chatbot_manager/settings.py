@@ -9,6 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -135,3 +136,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = 'consumo'
 LOGOUT_REDIRECT_URL = 'login'
 LOGIN_URL = 'login'
+
+
+# Asaas Configuration
+ASAAS_API_KEY = os.getenv('ASAAS_API_KEY', '')
+ASAAS_API_URL = 'https://sandbox.asaas.com/api/v3'  # sandbox para testes
+# ASAAS_API_URL = 'https://www.asaas.com/api/v3'  # produção
+
+ASAAS_WEBHOOK_TOKEN = os.getenv('ASAAS_WEBHOOK_TOKEN', '')
+ADMIN_EMAIL = 'luanmunizandrade@gmail.com'

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 dolar = 6
 
 # CONFIGURAÇÃO: Defina aqui a quantidade de tokens incluídos no plano
-TOKENS_INCLUIDOS_PLANO = 1
+# TOKENS_INCLUIDOS_PLANO = 1
 
 def get_langsmith_client():
     """Initializes the LangSmith client."""
@@ -110,7 +110,7 @@ def get_available_months(billing_day=18):
     return months
 
 
-def get_usage_data_optimized(project_name, start_time, end_time):
+def get_usage_data_optimized(project_name, start_time, end_time, tokens_incluidos=1000000):
     """
     Função otimizada que busca todos os dados necessários em uma única chamada
     e calcula estatísticas totais e diárias de uma só vez.
@@ -145,11 +145,11 @@ def get_usage_data_optimized(project_name, start_time, end_time):
     total_cost_usd = total_stats.get('total_cost', 0)
     
     # Calcula porcentagem de consumo
-    porcentagem_consumo = min((total_tokens / TOKENS_INCLUIDOS_PLANO) * 100, 100) if TOKENS_INCLUIDOS_PLANO > 0 else 0
+    porcentagem_consumo = min((total_tokens / tokens_incluidos) * 100, 100) if tokens_incluidos > 0 else 0
     
-    # Calcula custo em BRL (só cobra após 100%)
     if porcentagem_consumo >= 100:
-        tokens_excedentes = total_tokens - TOKENS_INCLUIDOS_PLANO
+        tokens_excedentes = total_tokens - tokens_incluidos
+
         # Assume o mesmo custo médio por token do total
         custo_por_token = (total_cost_usd * dolar) / total_tokens if total_tokens > 0 else 0
         custo_total_brl = tokens_excedentes * custo_por_token
@@ -200,11 +200,11 @@ def get_usage_data_optimized(project_name, start_time, end_time):
                         daily_data[day_str]['output_tokens'] += run.completion_tokens
                     
                     # Calcula custo diário baseado na lógica de 100%
-                    porcentagem_dia = min((total_acumulado / TOKENS_INCLUIDOS_PLANO) * 100, 100) if TOKENS_INCLUIDOS_PLANO > 0 else 0
+                    porcentagem_dia = min((total_acumulado / tokens_incluidos) * 100, 100) if tokens_incluidos > 0 else 0
                     
                     if porcentagem_dia >= 100 and run.total_cost:
                         # Só adiciona custo se já ultrapassou os tokens incluídos
-                        tokens_excedentes_run = max(0, total_acumulado - TOKENS_INCLUIDOS_PLANO)
+                        tokens_excedentes_run = max(0, total_acumulado - tokens_incluidos)
                         if tokens_excedentes_run > 0:
                             daily_data[day_str]['cost'] += run.total_cost * dolar
 
@@ -216,7 +216,7 @@ def get_usage_data_optimized(project_name, start_time, end_time):
         'total_cost': custo_total_brl,
         'run_count': contador,
         'porcentagem_consumo': porcentagem_consumo,
-        'tokens_incluidos': TOKENS_INCLUIDOS_PLANO,
+        'tokens_incluidos': tokens_incluidos,
         'period_start': start_time.isoformat(),
         'period_end': end_time.isoformat(),
     }
